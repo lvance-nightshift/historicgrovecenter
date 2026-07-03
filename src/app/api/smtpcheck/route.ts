@@ -6,6 +6,8 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { isEmailConfigured } from "@/lib/email";
+import { isDbConfigured } from "@/db";
+import { submitContact, initialContactState } from "@/app/actions/contact";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -14,6 +16,26 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   if (url.searchParams.get("key") !== "grovedebug") {
     return new NextResponse("not found", { status: 404 });
+  }
+
+  // Reproduce the real contact-form submission end-to-end.
+  if (url.searchParams.get("action") === "1") {
+    const fd = new FormData();
+    fd.set("name", "Debug Tester");
+    fd.set("email", "debug@example.com");
+    fd.set("subject", "action path check");
+    fd.set("message", "Reproducing the contact action from the debug route.");
+    try {
+      const result = await submitContact(initialContactState, fd);
+      return NextResponse.json({ isDbConfigured: isDbConfigured(), result });
+    } catch (e) {
+      return NextResponse.json({
+        isDbConfigured: isDbConfigured(),
+        threw: true,
+        error: e instanceof Error ? e.message : String(e),
+        stack: e instanceof Error ? e.stack?.split("\n").slice(0, 6) : null,
+      });
+    }
   }
 
   const out: Record<string, unknown> = {
