@@ -74,8 +74,8 @@ export const merchants: Merchant[] = [
     hours: "Daily 6:30am–3pm",
   },
   {
-    slug: "grove-barbers",
-    name: "Grove Barbers",
+    slug: "grove-barbershop",
+    name: "Grove Barbershop",
     category: "Health & Beauty",
     tagline: "Classic cuts, hot-towel shaves",
     description:
