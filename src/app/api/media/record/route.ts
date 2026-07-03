@@ -5,15 +5,18 @@
  * width?, height?, altText?, title?, collection? }
  */
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth/session";
+import { getActor, canManageContent } from "@/lib/auth/authorize";
 import { recordUpload, mediaUrl } from "@/lib/media";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const user = await getSessionUser();
-  if (!user) {
+  const actor = await getActor();
+  if (!actor) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!canManageContent(actor)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   let body: Record<string, unknown>;
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
     altText: typeof body.altText === "string" ? body.altText : undefined,
     title: typeof body.title === "string" ? body.title : undefined,
     collection: typeof body.collection === "string" ? body.collection : undefined,
-    uploadedByUserId: user.id,
+    uploadedByUserId: actor.user.id,
   });
 
   return NextResponse.json({ media: { ...row, url: mediaUrl(row) } });

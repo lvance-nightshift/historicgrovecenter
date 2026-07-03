@@ -3,15 +3,18 @@
  * Auth-gated. Lists media (newest first) for the picker's library tab.
  */
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth/session";
+import { getActor, canManageContent } from "@/lib/auth/authorize";
 import { listMedia } from "@/lib/media";
 
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const user = await getSessionUser();
-  if (!user) {
+  const actor = await getActor();
+  if (!actor) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!canManageContent(actor)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);

@@ -5,7 +5,7 @@
  * `uploadUrl` (direct to R2), then calls /api/media/record.
  */
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth/session";
+import { getActor, canManageContent } from "@/lib/auth/authorize";
 import {
   createUploadTarget,
   ALLOWED_CONTENT_TYPES,
@@ -16,9 +16,12 @@ import { isR2Configured } from "@/lib/r2";
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const user = await getSessionUser();
-  if (!user) {
+  const actor = await getActor();
+  if (!actor) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!canManageContent(actor)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   if (!isR2Configured()) {
     return NextResponse.json({ error: "Storage not configured" }, { status: 503 });
