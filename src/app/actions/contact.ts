@@ -15,14 +15,7 @@ import {
   isEmailConfigured,
   sendContactNotification,
 } from "@/lib/email";
-
-export type ContactState = {
-  ok: boolean;
-  message: string;
-  fieldErrors?: Partial<Record<"name" | "email" | "message", string>>;
-};
-
-export const initialContactState: ContactState = { ok: false, message: "" };
+import type { ContactState } from "./contact-state";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

@@ -7,7 +7,8 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { isEmailConfigured } from "@/lib/email";
 import { isDbConfigured } from "@/db";
-import { submitContact, initialContactState } from "@/app/actions/contact";
+import { submitContact } from "@/app/actions/contact";
+import { initialContactState } from "@/app/actions/contact-state";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;

@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import {
-  initialContactState,
-  submitContact,
-} from "@/app/actions/contact";
+import { submitContact } from "@/app/actions/contact";
+import { initialContactState } from "@/app/actions/contact-state";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
