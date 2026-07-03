@@ -46,6 +46,11 @@ function getTransport(): Transporter {
     port,
     secure: port === 465, // implicit TLS on 465; STARTTLS on 587
     auth: { user, pass },
+    // Fail fast instead of hanging the serverless function if the SMTP host
+    // is slow or unreachable from the deploy environment.
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
   });
   return _transport;
 }
