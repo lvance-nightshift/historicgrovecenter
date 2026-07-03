@@ -13,27 +13,22 @@
 
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getDb } from "@/db";
 import { media, type Media, type NewMedia } from "@/db/schema";
 import { getR2, presignUpload, r2PublicUrl, isR2Configured } from "@/lib/r2";
+import {
+  MEDIA_COLLECTIONS,
+  ACCEPTED_CONTENT_TYPES,
+  MAX_UPLOAD_BYTES,
+  type MediaCollection,
+} from "@/lib/media-shared";
 
-export const MEDIA_COLLECTIONS = ["events", "merchants", "site", "general"] as const;
-export type MediaCollection = (typeof MEDIA_COLLECTIONS)[number];
+export { MEDIA_COLLECTIONS, MAX_UPLOAD_BYTES, type MediaCollection };
 
 /** Allowed upload types → keeps junk out of the bucket. */
-export const ALLOWED_CONTENT_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/avif",
-  "image/svg+xml",
-  "application/pdf",
-]);
-
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
+export const ALLOWED_CONTENT_TYPES = new Set<string>(ACCEPTED_CONTENT_TYPES);
 
 function normalizeCollection(c?: string): MediaCollection {
   return (MEDIA_COLLECTIONS as readonly string[]).includes(c ?? "")
@@ -130,6 +125,33 @@ export async function uploadBuffer(input: {
     altText: input.altText,
     uploadedByUserId: input.uploadedByUserId,
   });
+}
+
+export type MediaWithUrl = Media & { url: string };
+
+/** List media for the picker, newest first, optionally filtered by collection. */
+export async function listMedia(opts?: {
+  collection?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<MediaWithUrl[]> {
+  const db = getDb();
+  const limit = Math.min(Math.max(opts?.limit ?? 60, 1), 200);
+  const offset = Math.max(opts?.offset ?? 0, 0);
+  const filter =
+    opts?.collection && (MEDIA_COLLECTIONS as readonly string[]).includes(opts.collection)
+      ? eq(media.collection, opts.collection)
+      : undefined;
+
+  const rows = await db
+    .select()
+    .from(media)
+    .where(filter)
+    .orderBy(desc(media.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return rows.map((r) => ({ ...r, url: mediaUrl(r) }));
 }
 
 /** Delete a media row and its R2 object. */

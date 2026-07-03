@@ -19,11 +19,18 @@ const COMING_SOON =
 
 const protect = auth?.middleware({ loginUrl: "/auth/sign-in" });
 
+// Areas that must stay reachable even while the public site shows "Coming
+// Soon" — so admins/coordinators can sign in and work before launch.
+const COMING_SOON_EXEMPT = ["/coming-soon", "/auth", "/admin", "/account"];
+
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1) Coming-soon takeover (production only, via env var).
-  if (COMING_SOON && pathname !== "/coming-soon") {
+  if (
+    COMING_SOON &&
+    !COMING_SOON_EXEMPT.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/coming-soon";
     return NextResponse.rewrite(url);
