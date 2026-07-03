@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { StackProvider, StackTheme } from "@stackframe/stack";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { site } from "@/lib/site";
+import { stackServerApp } from "@/stack";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,15 +60,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const shell = (
+    <>
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </>
+  );
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="texture-paper flex min-h-full flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {/* Wrap in Stack Auth only once Neon Auth keys are configured. */}
+        {stackServerApp ? (
+          <StackProvider app={stackServerApp}>
+            <StackTheme>{shell}</StackTheme>
+          </StackProvider>
+        ) : (
+          shell
+        )}
       </body>
     </html>
   );

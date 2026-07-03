@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
+import ContactForm from "@/components/ContactForm";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -116,56 +117,7 @@ export default function VisitPage() {
                 Questions, event ideas, or membership interest — we&apos;ll get
                 back to you.
               </p>
-              {/*
-                PLACEHOLDER FORM — this does not submit anywhere yet.
-                Wire the `action` to a form service (Formspree, Netlify Forms,
-                a Next.js server action, etc.) before going live.
-              */}
-              <form className="mt-6 space-y-4" action="#" method="post">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm">
-                    <span className="font-medium text-foreground">Name</span>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20"
-                    />
-                  </label>
-                  <label className="block text-sm">
-                    <span className="font-medium text-foreground">Email</span>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20"
-                    />
-                  </label>
-                </div>
-                <label className="block text-sm">
-                  <span className="font-medium text-foreground">Subject</span>
-                  <input
-                    type="text"
-                    name="subject"
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20"
-                  />
-                </label>
-                <label className="block text-sm">
-                  <span className="font-medium text-foreground">Message</span>
-                  <textarea
-                    name="message"
-                    rows={5}
-                    required
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="w-full rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark"
-                >
-                  Send message
-                </button>
-              </form>
+              <ContactForm />
             </div>
 
             {/* Map placeholder — replace with an embedded map */}
