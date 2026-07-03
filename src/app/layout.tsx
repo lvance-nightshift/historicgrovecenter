@@ -58,15 +58,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // In coming-soon mode the proxy rewrites every route to /coming-soon, which
+  // is a full-screen takeover — so drop the site header/footer chrome.
+  const comingSoon =
+    process.env.COMING_SOON === "true" || process.env.COMING_SOON === "1";
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="texture-paper flex min-h-full flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {comingSoon ? (
+          children
+        ) : (
+          <>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </>
+        )}
       </body>
     </html>
   );
