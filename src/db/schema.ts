@@ -112,7 +112,9 @@ export const companies = pgTable("companies", {
   website: text("website"),
   phone: varchar("phone", { length: 40 }),
   addressLine: text("address_line"),
-  logoKey: text("logo_key"), // R2 object key
+  logoMediaId: integer("logo_media_id").references(() => media.id, {
+    onDelete: "set null",
+  }),
   published: boolean("published").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -191,7 +193,9 @@ export const events = pgTable("events", {
   endAt: timestamp("end_at", { withTimezone: true }),
   location: text("location"),
   description: text("description"),
-  heroImageKey: text("hero_image_key"),
+  heroMediaId: integer("hero_media_id").references(() => media.id, {
+    onDelete: "set null",
+  }),
   published: boolean("published").notNull().default(false),
   // Application intake toggles.
   vendorAppsOpen: boolean("vendor_apps_open").notNull().default(false),
@@ -303,9 +307,59 @@ export const eventInfoSections = pgTable("event_info_sections", {
   key: varchar("key", { length: 64 }).notNull(), // map | parking | setup | …
   title: varchar("title", { length: 200 }),
   body: text("body"),
-  imageKey: text("image_key"),
+  mediaId: integer("media_id").references(() => media.id, {
+    onDelete: "set null",
+  }),
   sortOrder: integer("sort_order").notNull().default(0),
 });
+
+/* ------------------------------------------------------------------ *
+ * Media library — every uploaded file (images, docs) is one row here,
+ * stored in R2. Entities reference media by id (logo, hero, section image)
+ * or attach many via `media_attachments` (galleries). One place to upload,
+ * reusable across merchants, events, and the main site.
+ * ------------------------------------------------------------------ */
+export const media = pgTable(
+  "media",
+  {
+    id: serial("id").primaryKey(),
+    r2Key: text("r2_key").notNull().unique(),
+    filename: varchar("filename", { length: 300 }),
+    contentType: varchar("content_type", { length: 128 }),
+    sizeBytes: integer("size_bytes"),
+    width: integer("width"),
+    height: integer("height"),
+    altText: text("alt_text"),
+    title: varchar("title", { length: 300 }),
+    // Top-level bucket for organizing the uploader: events | merchants | site | general
+    collection: varchar("collection", { length: 64 }).notNull().default("general"),
+    uploadedByUserId: text("uploaded_by_user_id"), // → neon_auth.user.id
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("media_collection_idx").on(t.collection)],
+);
+
+/** Flexible many-to-many attachment: media ↔ any target, with a purpose. */
+export const mediaAttachments = pgTable(
+  "media_attachments",
+  {
+    id: serial("id").primaryKey(),
+    mediaId: integer("media_id")
+      .notNull()
+      .references(() => media.id, { onDelete: "cascade" }),
+    // company | event | event_info_section | page | site …
+    targetType: varchar("target_type", { length: 48 }).notNull(),
+    targetId: integer("target_id"), // nullable for site-wide media
+    // logo | hero | gallery | map | banner …
+    purpose: varchar("purpose", { length: 48 }).notNull().default("gallery"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("media_attachments_target_idx").on(t.targetType, t.targetId),
+    index("media_attachments_media_idx").on(t.mediaId),
+  ],
+);
 
 /* ------------------------------------------------------------------ *
  * Contact form inbox (existing). Optionally matched to a person later.
@@ -336,5 +390,8 @@ export type EventRow = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type EventParticipation = typeof eventParticipations.$inferSelect;
 export type NewEventParticipation = typeof eventParticipations.$inferInsert;
+export type Media = typeof media.$inferSelect;
+export type NewMedia = typeof media.$inferInsert;
+export type MediaAttachment = typeof mediaAttachments.$inferSelect;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type NewContactSubmission = typeof contactSubmissions.$inferInsert;

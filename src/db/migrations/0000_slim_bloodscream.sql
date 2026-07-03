@@ -12,7 +12,7 @@ CREATE TABLE "companies" (
 	"website" text,
 	"phone" varchar(40),
 	"address_line" text,
-	"logo_key" text,
+	"logo_media_id" integer,
 	"published" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE "event_info_sections" (
 	"key" varchar(64) NOT NULL,
 	"title" varchar(200),
 	"body" text,
-	"image_key" text,
+	"media_id" integer,
 	"sort_order" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
@@ -133,7 +133,7 @@ CREATE TABLE "events" (
 	"end_at" timestamp with time zone,
 	"location" text,
 	"description" text,
-	"hero_image_key" text,
+	"hero_media_id" integer,
 	"published" boolean DEFAULT false NOT NULL,
 	"vendor_apps_open" boolean DEFAULT false NOT NULL,
 	"food_apps_open" boolean DEFAULT false NOT NULL,
@@ -141,6 +141,32 @@ CREATE TABLE "events" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "events_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "media" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"r2_key" text NOT NULL,
+	"filename" varchar(300),
+	"content_type" varchar(128),
+	"size_bytes" integer,
+	"width" integer,
+	"height" integer,
+	"alt_text" text,
+	"title" varchar(300),
+	"collection" varchar(64) DEFAULT 'general' NOT NULL,
+	"uploaded_by_user_id" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "media_r2_key_unique" UNIQUE("r2_key")
+);
+--> statement-breakpoint
+CREATE TABLE "media_attachments" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"media_id" integer NOT NULL,
+	"target_type" varchar(48) NOT NULL,
+	"target_id" integer,
+	"purpose" varchar(48) DEFAULT 'gallery' NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "people" (
@@ -175,6 +201,7 @@ CREATE TABLE "roles" (
 	CONSTRAINT "roles_key_unique" UNIQUE("key")
 );
 --> statement-breakpoint
+ALTER TABLE "companies" ADD CONSTRAINT "companies_logo_media_id_media_id_fk" FOREIGN KEY ("logo_media_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "company_kind_assignments" ADD CONSTRAINT "company_kind_assignments_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "company_kind_assignments" ADD CONSTRAINT "company_kind_assignments_kind_id_company_kinds_id_fk" FOREIGN KEY ("kind_id") REFERENCES "public"."company_kinds"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "company_memberships" ADD CONSTRAINT "company_memberships_person_id_people_id_fk" FOREIGN KEY ("person_id") REFERENCES "public"."people"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -183,6 +210,7 @@ ALTER TABLE "contact_submissions" ADD CONSTRAINT "contact_submissions_person_id_
 ALTER TABLE "event_contacts" ADD CONSTRAINT "event_contacts_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_contacts" ADD CONSTRAINT "event_contacts_person_id_people_id_fk" FOREIGN KEY ("person_id") REFERENCES "public"."people"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_info_sections" ADD CONSTRAINT "event_info_sections_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "event_info_sections" ADD CONSTRAINT "event_info_sections_media_id_media_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_participations" ADD CONSTRAINT "event_participations_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_participations" ADD CONSTRAINT "event_participations_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_participations" ADD CONSTRAINT "event_participations_person_id_people_id_fk" FOREIGN KEY ("person_id") REFERENCES "public"."people"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -191,12 +219,17 @@ ALTER TABLE "event_shift_assignments" ADD CONSTRAINT "event_shift_assignments_sh
 ALTER TABLE "event_shift_assignments" ADD CONSTRAINT "event_shift_assignments_person_id_people_id_fk" FOREIGN KEY ("person_id") REFERENCES "public"."people"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "event_shifts" ADD CONSTRAINT "event_shifts_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_owner_company_id_companies_id_fk" FOREIGN KEY ("owner_company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "events" ADD CONSTRAINT "events_hero_media_id_media_id_fk" FOREIGN KEY ("hero_media_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "media_attachments" ADD CONSTRAINT "media_attachments_media_id_media_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."media"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "role_assignments" ADD CONSTRAINT "role_assignments_person_id_people_id_fk" FOREIGN KEY ("person_id") REFERENCES "public"."people"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "role_assignments" ADD CONSTRAINT "role_assignments_role_id_roles_id_fk" FOREIGN KEY ("role_id") REFERENCES "public"."roles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "company_membership_uq" ON "company_memberships" USING btree ("person_id","company_id");--> statement-breakpoint
 CREATE INDEX "event_participations_event_idx" ON "event_participations" USING btree ("event_id");--> statement-breakpoint
 CREATE INDEX "event_participations_status_idx" ON "event_participations" USING btree ("status");--> statement-breakpoint
 CREATE UNIQUE INDEX "event_shift_assignment_uq" ON "event_shift_assignments" USING btree ("shift_id","person_id");--> statement-breakpoint
+CREATE INDEX "media_collection_idx" ON "media" USING btree ("collection");--> statement-breakpoint
+CREATE INDEX "media_attachments_target_idx" ON "media_attachments" USING btree ("target_type","target_id");--> statement-breakpoint
+CREATE INDEX "media_attachments_media_idx" ON "media_attachments" USING btree ("media_id");--> statement-breakpoint
 CREATE INDEX "people_email_idx" ON "people" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "people_user_idx" ON "people" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "role_assignments_person_idx" ON "role_assignments" USING btree ("person_id");--> statement-breakpoint
