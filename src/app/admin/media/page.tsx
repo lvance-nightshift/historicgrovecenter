@@ -1,50 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { authClient } from "@/lib/auth/client";
 import MediaPicker from "@/components/MediaPicker";
 import { MEDIA_COLLECTIONS } from "@/lib/media-shared";
 import type { UploadedMedia } from "@/lib/media-client";
 
 export default function AdminMediaPage() {
-  const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
   const [collection, setCollection] = useState<string>("general");
   const [selected, setSelected] = useState<UploadedMedia | null>(null);
 
-  if (!isPending && !session) {
-    router.replace("/auth/sign-in?returnTo=/admin/media");
-    return null;
-  }
-
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-semibold text-grove">
-            Media Library
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            Upload and manage images and documents for the site, merchants, and events.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 text-sm">
-          {session?.user?.email && (
-            <span className="text-muted">{session.user.email}</span>
-          )}
-          <button
-            type="button"
-            onClick={async () => {
-              await authClient.signOut();
-              router.replace("/auth/sign-in");
-            }}
-            className="rounded-full border border-border px-4 py-1.5 font-medium text-foreground hover:border-grove/50"
-          >
-            Sign out
-          </button>
-        </div>
+      <div>
+        <h1 className="font-serif text-3xl font-semibold text-grove">
+          Media Library
+        </h1>
+        <p className="mt-1 text-sm text-muted">
+          Upload and manage images and documents for the site, merchants, and events.
+        </p>
       </div>
 
       {/* Collection selector */}
