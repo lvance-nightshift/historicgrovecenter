@@ -2,12 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { nav, site } from "@/lib/site";
 
 export default function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Show the Admin link only to signed-in admins (role from role_assignments).
+  useEffect(() => {
+    let active = true;
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (active) setIsAdmin(Boolean(d.isAdmin));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -48,6 +63,14 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="ml-1 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-grove-dark transition-colors hover:bg-brass-light"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
         {/* Mobile toggle */}
@@ -85,6 +108,15 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="mt-1 block rounded-md bg-brass px-3 py-2.5 text-base font-semibold text-grove-dark"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
       )}
     </header>
