@@ -7,6 +7,10 @@ import { merchants } from "@/lib/merchants";
 import { site } from "@/lib/site";
 import { getSiteMedia } from "@/lib/media";
 
+// Reads the current hero from the DB each request so admin changes show
+// immediately (the admin action also revalidates this path).
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const featuredEvents = upcomingEvents().slice(0, 3);
   const featuredMerchants = merchants.slice(0, 3);
