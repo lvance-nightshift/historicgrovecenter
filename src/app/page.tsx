@@ -71,6 +71,11 @@ export default async function Home() {
             </Link>
           </div>
         </div>
+        {hero?.credit && (
+          <p className="absolute bottom-2 right-3 z-10 text-[0.65rem] text-background/60">
+            {hero.credit}
+          </p>
+        )}
       </section>
 
       {/* Intro / three pillars */}

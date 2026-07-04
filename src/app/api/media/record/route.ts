@@ -43,5 +43,5 @@ export async function POST(req: Request) {
     uploadedByUserId: actor.user.id,
   });
 
-  return NextResponse.json({ media: { ...row, url: mediaUrl(row) } });
+  return NextResponse.json({ media: { ...row, url: mediaUrl(row), tags: [] } });
 }

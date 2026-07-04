@@ -331,12 +331,37 @@ export const media = pgTable(
     height: integer("height"),
     altText: text("alt_text"),
     title: varchar("title", { length: 300 }),
+    // Attribution / credit line shown with the image (e.g. archival photos:
+    // "Photo by Ed Westcott / U.S. Dept. of Energy").
+    credit: text("credit"),
     // Top-level bucket for organizing the uploader: events | merchants | site | general
     collection: varchar("collection", { length: 64 }).notNull().default("general"),
     uploadedByUserId: text("uploaded_by_user_id"), // → neon_auth.user.id
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("media_collection_idx").on(t.collection)],
+);
+
+/** Reusable tags for organizing media (and, later, other things). */
+export const tags = pgTable("tags", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  slug: varchar("slug", { length: 120 }).notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Which tags are applied to which media (many-to-many). */
+export const mediaTags = pgTable(
+  "media_tags",
+  {
+    mediaId: integer("media_id")
+      .notNull()
+      .references(() => media.id, { onDelete: "cascade" }),
+    tagId: integer("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.mediaId, t.tagId] })],
 );
 
 /** Flexible many-to-many attachment: media ↔ any target, with a purpose. */
@@ -393,5 +418,7 @@ export type NewEventParticipation = typeof eventParticipations.$inferInsert;
 export type Media = typeof media.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
 export type MediaAttachment = typeof mediaAttachments.$inferSelect;
+export type Tag = typeof tags.$inferSelect;
+export type MediaTag = typeof mediaTags.$inferSelect;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type NewContactSubmission = typeof contactSubmissions.$inferInsert;

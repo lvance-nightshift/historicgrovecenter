@@ -7,6 +7,8 @@
  * Client-safe (no server-only imports).
  */
 
+export type MediaTagRef = { id: number; name: string };
+
 export type UploadedMedia = {
   id: number;
   r2Key: string;
@@ -16,8 +18,11 @@ export type UploadedMedia = {
   width: number | null;
   height: number | null;
   altText: string | null;
+  title: string | null;
+  credit: string | null;
   collection: string;
   url: string;
+  tags: MediaTagRef[];
 };
 
 export { ACCEPTED_CONTENT_TYPES as ACCEPTED_TYPES } from "@/lib/media-shared";

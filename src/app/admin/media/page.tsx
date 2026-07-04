@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import MediaPicker from "@/components/MediaPicker";
+import MediaEditor from "@/components/admin/MediaEditor";
 import { MEDIA_COLLECTIONS } from "@/lib/media-shared";
 import type { UploadedMedia } from "@/lib/media-client";
 
@@ -51,54 +51,16 @@ export default function AdminMediaPage() {
           selectedId={selected?.id ?? null}
         />
 
-        {/* Selection preview — shows what onSelect returns */}
+        {/* Editor for the selected item — title, alt, credit, tags */}
         <aside className="rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-            Selected
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+            Details &amp; credit
           </h2>
           {selected ? (
-            <div className="mt-3 space-y-3 text-sm">
-              {selected.contentType?.startsWith("image/") &&
-              selected.contentType !== "application/pdf" ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border border-border">
-                  <Image
-                    src={selected.url}
-                    alt={selected.altText ?? selected.filename ?? ""}
-                    fill
-                    sizes="288px"
-                    className="object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="rounded-lg border border-border bg-grove/5 py-8 text-center text-muted">
-                  📄 {selected.filename}
-                </div>
-              )}
-              <dl className="space-y-1 text-xs text-muted">
-                <div className="truncate">
-                  <span className="font-medium text-foreground">File:</span>{" "}
-                  {selected.filename}
-                </div>
-                <div>
-                  <span className="font-medium text-foreground">Size:</span>{" "}
-                  {selected.width && selected.height
-                    ? `${selected.width}×${selected.height} · `
-                    : ""}
-                  {selected.sizeBytes
-                    ? `${Math.round(selected.sizeBytes / 1024)} KB`
-                    : ""}
-                </div>
-                <div className="break-all">
-                  <span className="font-medium text-foreground">URL:</span>{" "}
-                  <a href={selected.url} target="_blank" rel="noreferrer" className="text-grove hover:underline">
-                    open
-                  </a>
-                </div>
-              </dl>
-            </div>
+            <MediaEditor key={selected.id} media={selected} />
           ) : (
-            <p className="mt-3 text-sm text-muted">
-              Pick an item to see its details here.
+            <p className="text-sm text-muted">
+              Pick an item to edit its title, alt text, credit, and tags.
             </p>
           )}
         </aside>

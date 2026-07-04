@@ -17,7 +17,13 @@ import {
   roleAssignments,
 } from "@/db/schema";
 import { getActor, isAdmin, type RoleScope } from "@/lib/auth/authorize";
-import { setSiteMedia } from "@/lib/media";
+import {
+  setSiteMedia,
+  updateMediaMeta as _updateMediaMeta,
+  addMediaTag as _addMediaTag,
+  removeMediaTag as _removeMediaTag,
+  type MediaTagRef,
+} from "@/lib/media";
 
 async function assertAdmin() {
   const actor = await getActor();
@@ -33,6 +39,37 @@ export async function setHomeHero(mediaId: number | null): Promise<void> {
   await setSiteMedia("home_hero", mediaId);
   revalidatePath("/");
   revalidatePath("/admin/site");
+}
+
+/* ---------------- Media metadata & tags ---------------- */
+
+export async function updateMediaMeta(
+  mediaId: number,
+  input: { title?: string | null; altText?: string | null; credit?: string | null },
+): Promise<void> {
+  await assertAdmin();
+  await _updateMediaMeta(mediaId, input);
+  revalidatePath("/admin/media");
+  revalidatePath("/");
+}
+
+export async function addMediaTag(
+  mediaId: number,
+  name: string,
+): Promise<MediaTagRef | null> {
+  await assertAdmin();
+  const tag = await _addMediaTag(mediaId, name);
+  revalidatePath("/admin/media");
+  return tag;
+}
+
+export async function removeMediaTag(
+  mediaId: number,
+  tagId: number,
+): Promise<void> {
+  await assertAdmin();
+  await _removeMediaTag(mediaId, tagId);
+  revalidatePath("/admin/media");
 }
 
 const clean = (v?: string | null) => {
