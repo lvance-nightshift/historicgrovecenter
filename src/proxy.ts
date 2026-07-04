@@ -36,10 +36,16 @@ export default function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // 2) Auth protection, scoped to protected areas only.
+  // 2) Redirect-to-login for unauthenticated PAGE loads only.
+  //    Crucially, only for GET navigations — NEVER for server-action POSTs.
+  //    The auth middleware would 307 those to sign-in and the mutation would
+  //    silently fail. Actions/routes authorize themselves (assertAdmin/getActor),
+  //    and the /admin layout re-checks on render, so this is purely a UX redirect.
   const isProtected =
     pathname.startsWith("/account") || pathname.startsWith("/admin");
-  if (protect && isProtected) return protect(request);
+  if (protect && isProtected && request.method === "GET") {
+    return protect(request);
+  }
 
   return NextResponse.next();
 }
