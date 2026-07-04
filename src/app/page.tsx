@@ -1,27 +1,45 @@
 import Link from "next/link";
+import Image from "next/image";
 import EventCard from "@/components/EventCard";
 import MerchantCard from "@/components/MerchantCard";
 import { upcomingEvents } from "@/lib/events";
 import { merchants } from "@/lib/merchants";
 import { site } from "@/lib/site";
+import { getSiteMedia } from "@/lib/media";
 
-export default function Home() {
+export default async function Home() {
   const featuredEvents = upcomingEvents().slice(0, 3);
   const featuredMerchants = merchants.slice(0, 3);
+  const hero = await getSiteMedia("home_hero");
 
   return (
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-grove text-background">
-        {/* Decorative sunburst / mid-century motif */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.12]"
-          style={{
-            backgroundImage:
-              "repeating-conic-gradient(from 0deg at 80% 20%, var(--brass-light) 0deg 6deg, transparent 6deg 18deg)",
-          }}
-          aria-hidden
-        />
+        {hero ? (
+          <>
+            {/* Uploaded hero image + overlay so the text stays readable */}
+            <Image
+              src={hero.url}
+              alt={hero.altText ?? ""}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-grove/70" aria-hidden />
+          </>
+        ) : (
+          /* Decorative sunburst / mid-century motif (fallback) */
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.12]"
+            style={{
+              backgroundImage:
+                "repeating-conic-gradient(from 0deg at 80% 20%, var(--brass-light) 0deg 6deg, transparent 6deg 18deg)",
+            }}
+            aria-hidden
+          />
+        )}
         <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
           <p className="font-medium uppercase tracking-[0.25em] text-brass-light">
             {site.city} · Est. 1949

@@ -13,10 +13,10 @@
 
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getDb } from "@/db";
-import { media, type Media, type NewMedia } from "@/db/schema";
+import { media, mediaAttachments, type Media, type NewMedia } from "@/db/schema";
 import { getR2, presignUpload, r2PublicUrl, isR2Configured } from "@/lib/r2";
 import {
   MEDIA_COLLECTIONS,
@@ -152,6 +152,52 @@ export async function listMedia(opts?: {
     .offset(offset);
 
   return rows.map((r) => ({ ...r, url: mediaUrl(r) }));
+}
+
+/* -------- Site-wide media (hero, etc.) via media_attachments -------- */
+
+/** The media currently attached site-wide for a purpose (e.g. "home_hero"). */
+export async function getSiteMedia(
+  purpose: string,
+): Promise<MediaWithUrl | null> {
+  const rows = await getDb()
+    .select()
+    .from(media)
+    .innerJoin(mediaAttachments, eq(mediaAttachments.mediaId, media.id))
+    .where(
+      and(
+        eq(mediaAttachments.targetType, "site"),
+        eq(mediaAttachments.purpose, purpose),
+      ),
+    )
+    .orderBy(desc(mediaAttachments.id))
+    .limit(1);
+  const m = rows[0]?.media;
+  return m ? { ...m, url: mediaUrl(m) } : null;
+}
+
+/** Set (or clear, with null) the site-wide media for a purpose. */
+export async function setSiteMedia(
+  purpose: string,
+  mediaId: number | null,
+): Promise<void> {
+  const db = getDb();
+  await db
+    .delete(mediaAttachments)
+    .where(
+      and(
+        eq(mediaAttachments.targetType, "site"),
+        eq(mediaAttachments.purpose, purpose),
+      ),
+    );
+  if (mediaId != null) {
+    await db.insert(mediaAttachments).values({
+      mediaId,
+      targetType: "site",
+      targetId: null,
+      purpose,
+    });
+  }
 }
 
 /** Delete a media row and its R2 object. */

@@ -17,11 +17,22 @@ import {
   roleAssignments,
 } from "@/db/schema";
 import { getActor, isAdmin, type RoleScope } from "@/lib/auth/authorize";
+import { setSiteMedia } from "@/lib/media";
 
 async function assertAdmin() {
   const actor = await getActor();
   if (!actor || !isAdmin(actor)) throw new Error("Forbidden");
   return actor;
+}
+
+/* ---------------- Site appearance ---------------- */
+
+/** Set (or clear, with null) the home-page hero image. */
+export async function setHomeHero(mediaId: number | null): Promise<void> {
+  await assertAdmin();
+  await setSiteMedia("home_hero", mediaId);
+  revalidatePath("/");
+  revalidatePath("/admin/site");
 }
 
 const clean = (v?: string | null) => {
