@@ -39,6 +39,26 @@ for (const [key, label, description, isSystem] of kinds) {
             ON CONFLICT (key) DO NOTHING`;
 }
 
+// Default theme (mirrors globals.css / THEME_TOKENS defaults).
+const defaultPalette = {
+  grove: "#2f4a3c",
+  groveDark: "#22382d",
+  groveLight: "#7a9b86",
+  brick: "#a8482f",
+  brickDark: "#8a3a25",
+  brass: "#c08a2d",
+  brassLight: "#e0b968",
+  background: "#f7f3ea",
+  surface: "#fffdf8",
+  border: "#e4dcc9",
+  foreground: "#24211b",
+  muted: "#6b6558",
+};
+await sql`INSERT INTO themes (name, slug, palette, is_default)
+          VALUES (${"Default"}, ${"default"}, ${JSON.stringify(defaultPalette)}, ${true})
+          ON CONFLICT (slug) DO NOTHING`;
+
 const [r] = await sql`SELECT count(*)::int AS n FROM roles`;
 const [k] = await sql`SELECT count(*)::int AS n FROM company_kinds`;
-console.log(`seeded — roles: ${r.n}, company_kinds: ${k.n}`);
+const [th] = await sql`SELECT count(*)::int AS n FROM themes`;
+console.log(`seeded — roles: ${r.n}, company_kinds: ${k.n}, themes: ${th.n}`);

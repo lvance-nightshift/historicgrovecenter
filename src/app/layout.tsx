@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { site } from "@/lib/site";
+import { getActiveTheme, activeThemeCss } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -64,12 +65,16 @@ export default function RootLayout({
   const comingSoon =
     process.env.COMING_SOON === "true" || process.env.COMING_SOON === "1";
 
+  // Active theme → CSS-variable override injected below (overrides globals.css).
+  const theme = await getActiveTheme();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="texture-paper flex min-h-full flex-col">
+        <style dangerouslySetInnerHTML={{ __html: activeThemeCss(theme) }} />
         {comingSoon ? (
           children
         ) : (

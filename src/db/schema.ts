@@ -403,6 +403,45 @@ export const contactSubmissions = pgTable("contact_submissions", {
 });
 
 /* ------------------------------------------------------------------ *
+ * Theming — named color palettes, optionally scheduled by season.
+ * `palette` is a token→hex map (see src/lib/theme-shared.ts). One theme is the
+ * default; schedules activate a theme during a recurring month/day window;
+ * a `site_settings` override can force a theme immediately.
+ * ------------------------------------------------------------------ */
+export const themes = pgTable("themes", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  slug: varchar("slug", { length: 120 }).notNull().unique(),
+  palette: jsonb("palette").notNull(),
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const themeSchedules = pgTable("theme_schedules", {
+  id: serial("id").primaryKey(),
+  themeId: integer("theme_id")
+    .notNull()
+    .references(() => themes.id, { onDelete: "cascade" }),
+  label: varchar("label", { length: 120 }),
+  // Recurring window by month/day (repeats yearly). Handles wrap (e.g. Dec→Jan).
+  startMonth: integer("start_month").notNull(),
+  startDay: integer("start_day").notNull(),
+  endMonth: integer("end_month").notNull(),
+  endDay: integer("end_day").notNull(),
+  priority: integer("priority").notNull().default(0),
+  enabled: boolean("enabled").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Simple site-wide key/value settings (e.g. the active-theme override). */
+export const siteSettings = pgTable("site_settings", {
+  key: varchar("key", { length: 80 }).primaryKey(),
+  value: text("value"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/* ------------------------------------------------------------------ *
  * Inferred types for app code.
  * ------------------------------------------------------------------ */
 export type Person = typeof people.$inferSelect;
@@ -420,5 +459,10 @@ export type NewMedia = typeof media.$inferInsert;
 export type MediaAttachment = typeof mediaAttachments.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type MediaTag = typeof mediaTags.$inferSelect;
+export type Theme = typeof themes.$inferSelect;
+export type NewTheme = typeof themes.$inferInsert;
+export type ThemeSchedule = typeof themeSchedules.$inferSelect;
+export type NewThemeSchedule = typeof themeSchedules.$inferInsert;
+export type SiteSetting = typeof siteSettings.$inferSelect;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type NewContactSubmission = typeof contactSubmissions.$inferInsert;
