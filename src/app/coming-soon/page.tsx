@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -8,17 +9,35 @@ export const metadata: Metadata = {
 };
 
 export default function ComingSoonPage() {
+  // Optional hero image (env-configured so this works even before the DB is
+  // migrated to production). Falls back to the sunburst motif when unset.
+  const heroUrl = process.env.COMING_SOON_HERO_URL;
+
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-grove px-6 text-center text-background">
-      {/* Mid-century sunburst motif */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage:
-            "repeating-conic-gradient(from 0deg at 50% 30%, var(--brass-light) 0deg 6deg, transparent 6deg 18deg)",
-        }}
-        aria-hidden
-      />
+      {heroUrl ? (
+        <>
+          <Image
+            src={heroUrl}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-grove/75" aria-hidden />
+        </>
+      ) : (
+        /* Mid-century sunburst motif (fallback) */
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage:
+              "repeating-conic-gradient(from 0deg at 50% 30%, var(--brass-light) 0deg 6deg, transparent 6deg 18deg)",
+          }}
+          aria-hidden
+        />
+      )}
 
       <div className="relative flex flex-col items-center">
         {/* Tree glyph mark */}
