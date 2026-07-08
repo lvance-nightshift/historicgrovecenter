@@ -3,20 +3,32 @@ import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { themes, siteSettings } from "@/db/schema";
 import { getActiveTheme, THEME_OVERRIDE_KEY } from "@/lib/theme";
+import { normalizePalette } from "@/lib/theme-shared";
 import ThemesPanel from "@/components/admin/ThemesPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function AppearancePage() {
   const db = getDb();
-  const [rows, active, ov] = await Promise.all([
+  const [rawRows, active, ov] = await Promise.all([
     db
-      .select({ id: themes.id, name: themes.name, isDefault: themes.isDefault })
+      .select({
+        id: themes.id,
+        name: themes.name,
+        isDefault: themes.isDefault,
+        palette: themes.palette,
+      })
       .from(themes)
       .orderBy(asc(themes.id)),
     getActiveTheme(),
     db.select().from(siteSettings).where(eq(siteSettings.key, THEME_OVERRIDE_KEY)),
   ]);
+  const rows = rawRows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    isDefault: r.isDefault,
+    palette: normalizePalette(r.palette),
+  }));
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">

@@ -9,8 +9,26 @@ import {
   deleteTheme,
   setThemeOverride,
 } from "@/app/admin/site/actions";
+import type { Palette } from "@/lib/theme-shared";
 
-type ThemeRow = { id: number; name: string; isDefault: boolean };
+type ThemeRow = {
+  id: number;
+  name: string;
+  isDefault: boolean;
+  palette: Palette;
+};
+
+// Colors shown in the card's swatch strip.
+const SWATCH_KEYS = [
+  "grove",
+  "groveDark",
+  "brick",
+  "brass",
+  "brassLight",
+  "background",
+  "surface",
+  "foreground",
+];
 
 export default function ThemesPanel({
   themes,
@@ -79,53 +97,60 @@ export default function ThemesPanel({
         </p>
       </div>
 
-      {/* Themes list */}
-      <div className="overflow-hidden rounded-xl border border-border bg-surface">
-        <table className="w-full text-sm">
-          <tbody>
-            {themes.map((t) => (
-              <tr key={t.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3">
-                  <Link href={`/admin/site/appearance/${t.id}`} className="font-medium text-foreground hover:text-grove hover:underline">
-                    {t.name}
-                  </Link>
-                  {t.isDefault && (
-                    <span className="ml-2 rounded-full bg-grove/10 px-2 py-0.5 text-[0.65rem] text-grove">
-                      default
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Link href={`/admin/site/appearance/${t.id}`} className="text-grove hover:underline">
-                    Edit
-                  </Link>
-                  {!t.isDefault && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => run(() => setDefaultTheme(t.id))}
-                        disabled={pending}
-                        className="ml-4 text-muted hover:text-grove"
-                      >
-                        Make default
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(`Delete theme "${t.name}"?`)) run(() => deleteTheme(t.id));
-                        }}
-                        disabled={pending}
-                        className="ml-4 text-brick-dark hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Themes as cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {themes.map((t) => (
+          <div
+            key={t.id}
+            className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md"
+          >
+            <Link href={`/admin/site/appearance/${t.id}`} className="block">
+              {/* Swatch strip */}
+              <div className="flex h-14">
+                {SWATCH_KEYS.map((k) => (
+                  <div key={k} className="flex-1" style={{ background: t.palette[k] }} />
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-2 px-4 pt-3">
+                <span className="font-serif text-lg font-semibold text-foreground">
+                  {t.name}
+                </span>
+                {t.isDefault && (
+                  <span className="rounded-full bg-grove/10 px-2 py-0.5 text-[0.65rem] font-medium text-grove">
+                    default
+                  </span>
+                )}
+              </div>
+            </Link>
+            <div className="mt-2 flex items-center gap-4 px-4 pb-3 text-xs">
+              <Link href={`/admin/site/appearance/${t.id}`} className="font-medium text-grove hover:underline">
+                Edit colors
+              </Link>
+              {!t.isDefault && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => run(() => setDefaultTheme(t.id))}
+                    disabled={pending}
+                    className="text-muted hover:text-grove"
+                  >
+                    Make default
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Delete theme "${t.name}"?`)) run(() => deleteTheme(t.id));
+                    }}
+                    disabled={pending}
+                    className="ml-auto text-brick-dark hover:underline"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Create */}
