@@ -27,10 +27,16 @@ export default async function AdminDashboard() {
     tableCount(media),
   ]);
 
-  const cards = [
+  const cards: {
+    href: string;
+    label: string;
+    hint: string;
+    n?: number;
+  }[] = [
     { href: "/admin/people", label: "People", n: peopleN, hint: "Contacts, staff, friends" },
     { href: "/admin/companies", label: "Companies", n: companiesN, hint: "Merchants, vendors, bands" },
     { href: "/admin/media", label: "Media", n: mediaN, hint: "Images & documents" },
+    { href: "/admin/site", label: "Site", hint: "Hero image, colors & themes" },
     { href: "/admin", label: "Events", n: eventsN, hint: "Coming soon" },
     { href: "/admin", label: "Inbox", n: inboxN, hint: "Contact submissions" },
   ];
@@ -52,7 +58,7 @@ export default async function AdminDashboard() {
                 {c.label}
               </span>
               <span className="font-serif text-3xl font-semibold text-brick">
-                {c.n}
+                {typeof c.n === "number" ? c.n : "→"}
               </span>
             </div>
             <p className="mt-1 text-sm text-muted">{c.hint}</p>
