@@ -21,7 +21,14 @@ const protect = auth?.middleware({ loginUrl: "/auth/sign-in" });
 
 // Areas that must stay reachable even while the public site shows "Coming
 // Soon" — so admins/coordinators can sign in and work before launch.
-const COMING_SOON_EXEMPT = ["/coming-soon", "/auth", "/admin", "/account"];
+const COMING_SOON_EXEMPT = [
+  "/coming-soon",
+  "/auth",
+  "/admin",
+  "/account",
+  // Vendor registration opens before the full site launches.
+  "/pumpkin-fest",
+];
 
 // Asset requests must NEVER be rewritten to /coming-soon — otherwise the
 // coming-soon page can't load its own logo/hero. This covers the image

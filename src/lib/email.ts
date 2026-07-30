@@ -90,3 +90,85 @@ export async function sendContactNotification(msg: ContactMessage) {
       .join("\n"),
   });
 }
+
+/* ------------------------------------------------------------------ *
+ * Fall Pumpkin Fest — vendor registration.
+ * ------------------------------------------------------------------ */
+
+export type VendorRegistration = {
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  products: string;
+  spaces: number;
+  feeLabel: string; // e.g. "$90 (2 × $45)"
+  notes?: string;
+};
+
+/**
+ * Notifies the organizer of a new vendor registration and sends the vendor a
+ * confirmation. Best-effort: throws if the transport can't be built, so the
+ * caller can record the email status. `eventName` is the human event title.
+ */
+export async function sendVendorRegistrationEmails(
+  reg: VendorRegistration,
+  eventName: string,
+) {
+  const to = process.env.CONTACT_TO_EMAIL;
+  const from = process.env.CONTACT_FROM_EMAIL;
+  if (!to || !from) {
+    throw new Error("CONTACT_TO_EMAIL / CONTACT_FROM_EMAIL are not set.");
+  }
+  const transport = getTransport();
+
+  // 1) Organizer notification.
+  const organizerMail = transport.sendMail({
+    from: `Grove Center Website <${from}>`,
+    to,
+    replyTo: `${reg.contactName} <${reg.email}>`,
+    subject: `New ${eventName} vendor registration — ${reg.businessName}`,
+    text: [
+      `New vendor registration for ${eventName}:`,
+      "",
+      `Business:  ${reg.businessName}`,
+      `Contact:   ${reg.contactName}`,
+      `Email:     ${reg.email}`,
+      `Phone:     ${reg.phone}`,
+      `Sells:     ${reg.products}`,
+      `Spaces:    ${reg.spaces}`,
+      `Booth fee: ${reg.feeLabel}`,
+      reg.notes ? `Notes:     ${reg.notes}` : null,
+      "",
+      "Follow up to confirm the booth space and collect payment.",
+    ]
+      .filter((l) => l !== null)
+      .join("\n"),
+  });
+
+  // 2) Vendor confirmation.
+  const vendorMail = transport.sendMail({
+    from: `Historic Grove Center <${from}>`,
+    to: `${reg.contactName} <${reg.email}>`,
+    subject: `We received your ${eventName} vendor registration`,
+    text: [
+      `Hi ${reg.contactName},`,
+      "",
+      `Thanks for registering ${reg.businessName} as a vendor for the ${eventName} on Saturday, October 17, 2026 at the Historic Grove Center in Oak Ridge, TN.`,
+      "",
+      `Spaces requested: ${reg.spaces}`,
+      `Booth fee:        ${reg.feeLabel}`,
+      "",
+      "This is a request to reserve a space — it isn't confirmed yet. Spaces are limited (30 total) and assigned first come, first served. Someone from the Grove Center will be in touch to confirm your booth and arrange the booth fee.",
+      "",
+      "Event day: vendor setup begins at 7 a.m., the street closes at 9 a.m., and the festival runs 10 a.m.–4 p.m.",
+      "",
+      "Questions? Reply to this email or contact Shad at HistoricGroveCenter@gmail.com / 865-482-9251.",
+      "",
+      "— Historic Grove Center & Friends of the Grove Theater",
+    ].join("\n"),
+  });
+
+  // Send both; surface an error if either fails.
+  await Promise.all([organizerMail, vendorMail]);
+}
