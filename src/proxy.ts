@@ -23,8 +23,23 @@ const protect = auth?.middleware({ loginUrl: "/auth/sign-in" });
 // Soon" — so admins/coordinators can sign in and work before launch.
 const COMING_SOON_EXEMPT = ["/coming-soon", "/auth", "/admin", "/account"];
 
+// Asset requests must NEVER be rewritten to /coming-soon — otherwise the
+// coming-soon page can't load its own logo/hero. This covers the image
+// optimizer (/_next/image), Next internals (/_next/*), and any request for a
+// file with an extension (images, fonts, css, js, etc.). The matcher below is
+// supposed to exclude /_next, but the image optimizer still reaches the proxy
+// on Vercel, so we guard explicitly here.
+const ASSET_RE = /\.[a-z0-9]+$/i;
+const isAssetRequest = (pathname: string) =>
+  pathname.startsWith("/_next") || ASSET_RE.test(pathname);
+
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Let all asset/optimizer requests fall through to their normal handling.
+  if (isAssetRequest(pathname)) {
+    return NextResponse.next();
+  }
 
   // 1) Coming-soon takeover (production only, via env var).
   if (
