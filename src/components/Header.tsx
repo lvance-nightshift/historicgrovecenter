@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { nav, site } from "@/lib/site";
@@ -32,11 +33,15 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         {/* Wordmark */}
         <Link href="/" className="group flex items-center gap-3" onClick={() => setOpen(false)}>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-grove text-brass-light shadow-sm">
-            {/* Simple tree glyph — the "grove" */}
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden>
-              <path d="M12 2c-2.8 0-5 2.2-5 5 0 .7.14 1.36.4 1.96A4.5 4.5 0 0 0 5 13a4.5 4.5 0 0 0 4 4.47V21a1 1 0 1 0 2 0v-3.53A4.5 4.5 0 0 0 15 13a4.5 4.5 0 0 0-2.4-4.04c.26-.6.4-1.26.4-1.96 0-2.8-2.2-5-5-5z" />
-            </svg>
+          <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-white ring-1 ring-border shadow-sm">
+            <Image
+              src="/grove-center-logo.jpg"
+              alt="Historic Grove Center logo"
+              fill
+              sizes="44px"
+              className="object-cover"
+              priority
+            />
           </span>
           <span className="flex flex-col leading-none">
             <span className="font-serif text-lg font-semibold tracking-tight text-grove">

@@ -40,11 +40,16 @@ export default function ComingSoonPage() {
       )}
 
       <div className="relative flex flex-col items-center">
-        {/* Tree glyph mark */}
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-background/10 text-brass-light ring-1 ring-brass-light/30">
-          <svg viewBox="0 0 24 24" className="h-9 w-9" fill="currentColor" aria-hidden>
-            <path d="M12 2c-2.8 0-5 2.2-5 5 0 .7.14 1.36.4 1.96A4.5 4.5 0 0 0 5 13a4.5 4.5 0 0 0 4 4.47V21a1 1 0 1 0 2 0v-3.53A4.5 4.5 0 0 0 15 13a4.5 4.5 0 0 0-2.4-4.04c.26-.6.4-1.26.4-1.96 0-2.8-2.2-5-5-5z" />
-          </svg>
+        {/* Logo mark */}
+        <span className="relative h-28 w-28 overflow-hidden rounded-full bg-white shadow-lg ring-2 ring-brass-light/40 sm:h-32 sm:w-32">
+          <Image
+            src="/grove-center-logo.jpg"
+            alt="Historic Grove Center logo"
+            fill
+            sizes="128px"
+            className="object-cover"
+            priority
+          />
         </span>
 
         <p className="mt-8 text-sm font-semibold uppercase tracking-[0.3em] text-brass-light">
