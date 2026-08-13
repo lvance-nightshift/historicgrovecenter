@@ -111,6 +111,7 @@ export async function getPublicEvents(): Promise<{
         location: events.location,
         description: events.description,
         ticketUrl: events.ticketUrl,
+        vendorAppsOpen: events.vendorAppsOpen,
         ownerName: companies.name,
       })
       .from(events)
@@ -135,6 +136,7 @@ export async function getPublicEvents(): Promise<{
         badge: r.type === "business" ? r.ownerName ?? "Merchant event" : "Grove Center",
         summary: desc ? (desc.length > 140 ? `${desc.slice(0, 137)}…` : desc) : "",
         ticketUrl: r.ticketUrl ?? undefined,
+        registerUrl: r.vendorAppsOpen ? `/events/${r.slug}/register` : undefined,
       };
       if (date >= today) upcoming.push(ev);
       else past.push(ev);
@@ -248,6 +250,56 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
   } catch (err) {
     console.error("getAllEventsAdmin failed", err);
     return [];
+  }
+}
+
+export type RegisterableEvent = {
+  id: number;
+  slug: string;
+  title: string;
+  startAt: string | null;
+  endAt: string | null;
+  location: string | null;
+  description: string | null;
+};
+
+/**
+ * A published event that is accepting vendor registrations, by slug.
+ * Returns null if the event doesn't exist, isn't published, or has its
+ * registration form closed — the public register page uses this to gate access.
+ */
+export async function getRegisterableEvent(
+  slug: string,
+): Promise<RegisterableEvent | null> {
+  try {
+    const [r] = await getDb()
+      .select({
+        id: events.id,
+        slug: events.slug,
+        title: events.title,
+        startAt: events.startAt,
+        endAt: events.endAt,
+        location: events.location,
+        description: events.description,
+      })
+      .from(events)
+      .where(
+        and(
+          eq(events.slug, slug),
+          eq(events.published, true),
+          eq(events.vendorAppsOpen, true),
+        ),
+      )
+      .limit(1);
+    if (!r) return null;
+    return {
+      ...r,
+      startAt: r.startAt ? r.startAt.toISOString() : null,
+      endAt: r.endAt ? r.endAt.toISOString() : null,
+    };
+  } catch (err) {
+    console.error("getRegisterableEvent failed", err);
+    return null;
   }
 }
 

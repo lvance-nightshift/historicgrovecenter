@@ -187,6 +187,79 @@ export async function sendVendorRegistrationEmails(
 }
 
 /* ------------------------------------------------------------------ *
+ * Generic event registration — any event with vendor sign-ups open.
+ *
+ * Unlike the Pumpkin Fest helper above (which bakes in that event's date,
+ * booth fee, and setup times), this one is event-agnostic: it takes the
+ * event's name and an optional date/location label and keeps the copy
+ * generic so it works for any event.
+ * ------------------------------------------------------------------ */
+
+export type EventSignup = {
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  products: string;
+  notes?: string;
+};
+
+export async function sendEventRegistrationEmails(
+  reg: EventSignup,
+  event: { name: string; dateLabel?: string; location?: string },
+) {
+  const to = process.env.CONTACT_TO_EMAIL;
+  const from = process.env.CONTACT_FROM_EMAIL;
+  if (!to || !from) {
+    throw new Error("CONTACT_TO_EMAIL / CONTACT_FROM_EMAIL are not set.");
+  }
+  const transport = getTransport();
+  const whenWhere = [event.dateLabel, event.location].filter(Boolean).join(" · ");
+
+  // 1) Organizer notification.
+  const organizerMail = transport.sendMail({
+    from: `Grove Center Website <${from}>`,
+    to,
+    replyTo: `${reg.contactName} <${reg.email}>`,
+    subject: `New ${event.name} vendor registration — ${reg.businessName}`,
+    text: [
+      `New vendor registration for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}:`,
+      "",
+      `Business: ${reg.businessName}`,
+      `Contact:  ${reg.contactName}`,
+      `Email:    ${reg.email}`,
+      `Phone:    ${reg.phone}`,
+      `Offering: ${reg.products}`,
+      reg.notes ? `Notes:    ${reg.notes}` : null,
+      "",
+      "Follow up to confirm the space. This registration is also on the admin registrations page for this event.",
+    ]
+      .filter((l) => l !== null)
+      .join("\n"),
+  });
+
+  // 2) Vendor confirmation.
+  const vendorMail = transport.sendMail({
+    from: `Historic Grove Center <${from}>`,
+    to: `${reg.contactName} <${reg.email}>`,
+    subject: `We received your ${event.name} vendor registration`,
+    text: [
+      `Hi ${reg.contactName},`,
+      "",
+      `Thanks for registering ${reg.businessName} as a vendor for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}.`,
+      "",
+      "This is a request to reserve a space — it isn't confirmed yet. Someone from the Grove Center will be in touch to confirm the details.",
+      "",
+      "Questions? Just reply to this email.",
+      "",
+      "— Historic Grove Center",
+    ].join("\n"),
+  });
+
+  await Promise.all([organizerMail, vendorMail]);
+}
+
+/* ------------------------------------------------------------------ *
  * Merchant invite — asks a business owner to claim their listing.
  * ------------------------------------------------------------------ */
 
