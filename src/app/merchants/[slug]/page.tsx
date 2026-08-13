@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import { getMerchantBySlug } from "@/lib/merchants-db";
@@ -36,9 +35,10 @@ export default async function MerchantPage({ params }: Params) {
   return (
     <>
       <PageHero
-        eyebrow={m.category ?? "Merchant"}
+        eyebrow={m.categories && m.categories.length ? m.categories.join(" · ") : "Merchant"}
         title={m.name}
         subtitle={m.tagline}
+        logoUrl={m.logoUrl}
       />
 
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
@@ -49,17 +49,6 @@ export default async function MerchantPage({ params }: Params) {
         <div className="mt-6 grid gap-10 md:grid-cols-[1fr_18rem]">
           {/* Main */}
           <div>
-            {m.logoUrl && (
-              <span className="relative mb-6 block h-24 w-24 overflow-hidden rounded-xl border border-border bg-white">
-                <Image
-                  src={m.logoUrl}
-                  alt={`${m.name} logo`}
-                  fill
-                  sizes="96px"
-                  className="object-contain"
-                />
-              </span>
-            )}
             {m.description ? (
               <div
                 className="text-lg leading-relaxed text-foreground/85 [&_a]:text-grove [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted [&_li]:mb-1 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-3 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"

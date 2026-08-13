@@ -35,7 +35,6 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
 
   const [f, setF] = useState({
     name: company.name ?? "",
-    category: company.category ?? "",
     tagline: company.tagline ?? "",
     description: company.description ?? "",
     hours: company.hours ?? "",
@@ -46,16 +45,22 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
     instagram: company.instagram ?? "",
   });
   const [hoursByDay, setHoursByDay] = useState<WeekHours>(company.hoursByDay ?? {});
+  const [categories, setCategories] = useState<string[]>(company.categories ?? []);
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setF((prev) => ({ ...prev, [k]: e.target.value }));
     setSaved(false);
   };
 
+  const toggleCategory = (c: string) => {
+    setCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
+    setSaved(false);
+  };
+
   const preview: Merchant = {
     slug: company.slug ?? "preview",
     name: f.name || "Your business name",
-    category: f.category || undefined,
+    categories,
     tagline: f.tagline || undefined,
     description: f.description || undefined,
     hours: f.hours || undefined,
@@ -70,7 +75,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
     }
     startTransition(async () => {
       try {
-        await updateMyCompany({ companyId: company.id, ...f, hoursByDay });
+        await updateMyCompany({ companyId: company.id, ...f, categories, hoursByDay });
         setSaved(true);
         router.refresh();
       } catch {
@@ -95,33 +100,30 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
         </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className={label}>
-            <span className={labelText}>Category</span>
-            <div className="relative">
-              <select
-                value={f.category}
-                onChange={set("category")}
-                className={`${input} appearance-none pr-9`}
-              >
-                <option value="">— choose —</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
+          <div className={label}>
+            <span className={labelText}>
+              Categories <span className="text-muted">(choose any that fit)</span>
+            </span>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {CATEGORIES.map((c) => {
+                const on = categories.includes(c);
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => toggleCategory(c)}
+                    className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                      on
+                        ? "bg-grove text-background"
+                        : "border border-border bg-background text-foreground/70 hover:border-grove/40"
+                    }`}
+                  >
                     {c}
-                  </option>
-                ))}
-              </select>
-              <svg
-                aria-hidden
-                viewBox="0 0 20 20"
-                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
-              </svg>
+                  </button>
+                );
+              })}
             </div>
-          </label>
+          </div>
           <label className={label}>
             <span className={labelText}>Tagline</span>
             <input

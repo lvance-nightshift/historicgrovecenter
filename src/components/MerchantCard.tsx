@@ -11,10 +11,17 @@ export default function MerchantCard({ merchant }: { merchant: Merchant }) {
       href={`/merchants/${merchant.slug}`}
       className="group flex flex-col rounded-xl border border-border bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-grove/40 hover:shadow-md"
     >
-      {merchant.category && (
-        <span className="w-fit rounded-full bg-grove/10 px-2.5 py-0.5 text-xs font-medium text-grove">
-          {merchant.category}
-        </span>
+      {merchant.categories && merchant.categories.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {merchant.categories.map((c) => (
+            <span
+              key={c}
+              className="rounded-full bg-grove/10 px-2.5 py-0.5 text-xs font-medium text-grove"
+            >
+              {c}
+            </span>
+          ))}
+        </div>
       )}
       <h3 className="mt-3 font-serif text-xl font-semibold text-foreground group-hover:text-grove">
         {merchant.name}

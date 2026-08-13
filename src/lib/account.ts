@@ -13,6 +13,7 @@ import { getDb } from "@/db";
 import { companies, media, mediaAttachments } from "@/db/schema";
 import { canManageCompany, type Actor } from "@/lib/auth/authorize";
 import { mediaUrl } from "@/lib/media";
+import { normalizeCategories } from "@/lib/merchants";
 import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
 
 export type MediaRef = { id: number; url: string };
@@ -30,7 +31,7 @@ export type EditableCompany = {
   id: number;
   slug: string | null;
   name: string;
-  category: string | null;
+  categories: string[];
   tagline: string | null;
   description: string | null;
   hours: string | null;
@@ -119,7 +120,7 @@ export async function getEditableCompany(
     id: row.id,
     slug: row.slug,
     name: row.name,
-    category: row.category,
+    categories: normalizeCategories(row.categories),
     tagline: row.tagline,
     description: row.description,
     hours: row.hours,

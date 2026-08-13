@@ -1,15 +1,24 @@
+import Image from "next/image";
+
 export default function PageHero({
   eyebrow,
   title,
   subtitle,
+  logoUrl,
 }: {
   eyebrow: string;
   title: string;
   subtitle?: string;
+  logoUrl?: string;
 }) {
   return (
     <section className="border-b border-border bg-grove text-background">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        {logoUrl && (
+          <span className="relative mb-5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/10">
+            <Image src={logoUrl} alt="" fill sizes="80px" className="object-contain p-2" />
+          </span>
+        )}
         <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brass-light">
           {eyebrow}
         </p>

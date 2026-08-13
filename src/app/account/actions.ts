@@ -14,6 +14,7 @@ import { companies, mediaAttachments } from "@/db/schema";
 import sanitizeHtml from "sanitize-html";
 import { getActor, canManageCompany } from "@/lib/auth/authorize";
 import { GALLERY_LIMIT } from "@/lib/account";
+import { normalizeCategories } from "@/lib/merchants";
 import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
 
 async function assertCanManage(companyId: number) {
@@ -45,7 +46,7 @@ function galleryWhere(companyId: number) {
 export type MerchantListingInput = {
   companyId: number;
   name: string;
-  category?: string;
+  categories?: string[];
   tagline?: string;
   description?: string;
   hours?: string;
@@ -105,7 +106,7 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
     .update(companies)
     .set({
       name,
-      category: clean(input.category),
+      categories: normalizeCategories(input.categories),
       tagline: clean(input.tagline),
       description: richText(input.description),
       hours: clean(input.hours),

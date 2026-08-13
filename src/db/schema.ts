@@ -115,9 +115,10 @@ export const companies = pgTable("companies", {
   logoMediaId: integer("logo_media_id").references(() => media.id, {
     onDelete: "set null",
   }),
-  // Public directory category (Dining, Shopping, Services, …). See CATEGORIES
-  // in src/lib/merchants.ts.
+  // Public directory category (legacy single value; superseded by `categories`).
   category: varchar("category", { length: 64 }),
+  // One or more directory categories (Dining, Shopping, …). string[] jsonb.
+  categories: jsonb("categories"),
   // { facebook, instagram, … } — public social links shown on the merchant page.
   socialLinks: jsonb("social_links"),
   // Structured weekly hours: { mon: {closed} | {open,close}, … }. See

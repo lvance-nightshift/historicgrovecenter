@@ -17,12 +17,13 @@ import {
   mediaAttachments,
 } from "@/db/schema";
 import type { Merchant } from "./merchants";
+import { normalizeCategories } from "./merchants";
 import { normalizeWeekHours } from "./hours";
 
 type Row = {
   slug: string | null;
   name: string;
-  category: string | null;
+  categories: unknown;
   tagline: string | null;
   description: string | null;
   phone: string | null;
@@ -46,7 +47,7 @@ function toMerchant(r: Row): Merchant | null {
   return {
     slug: r.slug,
     name: r.name,
-    category: r.category ?? undefined,
+    categories: normalizeCategories(r.categories),
     tagline: r.tagline ?? undefined,
     description: r.description ?? undefined,
     phone: r.phone ?? undefined,
@@ -63,7 +64,7 @@ function toMerchant(r: Row): Merchant | null {
 const selection = {
   slug: companies.slug,
   name: companies.name,
-  category: companies.category,
+  categories: companies.categories,
   tagline: companies.tagline,
   description: companies.description,
   phone: companies.phone,

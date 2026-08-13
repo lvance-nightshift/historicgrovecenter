@@ -19,7 +19,7 @@ export default function MerchantDirectory({
     () =>
       filter === "All"
         ? merchants
-        : merchants.filter((m) => m.category === filter),
+        : merchants.filter((m) => m.categories?.includes(filter)),
     [filter, merchants],
   );
 
