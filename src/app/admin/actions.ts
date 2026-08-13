@@ -7,8 +7,10 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "@/db";
+import { isEmailConfigured, sendMerchantInvite } from "@/lib/email";
 import {
   people,
   companies,
@@ -379,7 +381,7 @@ export async function addCompanyOwnerByEmail(
   companyId: number,
   email: string,
   name?: string,
-): Promise<void> {
+): Promise<number> {
   await assertAdmin();
   const em = email.trim();
   if (!em) throw new Error("Email is required.");
@@ -420,6 +422,37 @@ export async function addCompanyOwnerByEmail(
       .values({ personId: person.id, roleId, scope: "company", scopeId: companyId });
   }
   revalidatePath(`/admin/companies/${companyId}`);
+  return person.id;
+}
+
+/** Email a company owner an invite to claim/manage their business listing. */
+export async function sendOwnerInvite(
+  companyId: number,
+  personId: number,
+): Promise<void> {
+  await assertAdmin();
+  if (!isEmailConfigured()) throw new Error("Email isn't configured.");
+  const db = getDb();
+  const [person] = await db
+    .select({ email: people.email })
+    .from(people)
+    .where(eq(people.id, personId));
+  const [company] = await db
+    .select({ name: companies.name })
+    .from(companies)
+    .where(eq(companies.id, companyId));
+  if (!person?.email || !company) throw new Error("Missing email or company.");
+
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "historicgrovecenter.com";
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const claimUrl = `${proto}://${host}/auth/sign-in?mode=signup&returnTo=/account&email=${encodeURIComponent(person.email)}`;
+
+  await sendMerchantInvite({
+    email: person.email,
+    businessName: company.name,
+    claimUrl,
+  });
 }
 
 export async function removeCompanyOwner(

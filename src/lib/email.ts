@@ -172,3 +172,34 @@ export async function sendVendorRegistrationEmails(
   // Send both; surface an error if either fails.
   await Promise.all([organizerMail, vendorMail]);
 }
+
+/* ------------------------------------------------------------------ *
+ * Merchant invite — asks a business owner to claim their listing.
+ * ------------------------------------------------------------------ */
+
+export async function sendMerchantInvite(input: {
+  email: string;
+  businessName: string;
+  claimUrl: string;
+}) {
+  const from = process.env.CONTACT_FROM_EMAIL;
+  if (!from) throw new Error("CONTACT_FROM_EMAIL is not set.");
+
+  return getTransport().sendMail({
+    from: `Historic Grove Center <${from}>`,
+    to: input.email,
+    subject: `Manage ${input.businessName} on Historic Grove Center`,
+    text: [
+      `You've been invited to manage ${input.businessName}'s listing on the`,
+      `Historic Grove Center website.`,
+      "",
+      "Set up your account to edit your business info, hours, photos, and events:",
+      input.claimUrl,
+      "",
+      "Use this email address when you create your account so it links to your",
+      "business automatically. Once you're in, your changes go live right away.",
+      "",
+      "— Historic Grove Center",
+    ].join("\n"),
+  });
+}
