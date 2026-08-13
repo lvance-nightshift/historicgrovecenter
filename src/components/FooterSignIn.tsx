@@ -31,7 +31,7 @@ export default function FooterSignIn() {
 
   return (
     <Link
-      href="/auth/sign-in"
+      href="/auth/sign-in?returnTo=/account"
       className="inline-flex items-center gap-1.5 text-background/60 transition-colors hover:text-background"
     >
       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
