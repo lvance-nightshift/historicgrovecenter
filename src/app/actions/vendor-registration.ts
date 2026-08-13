@@ -13,14 +13,14 @@ import { and, eq } from "drizzle-orm";
 import { getDb, isDbConfigured } from "@/db";
 import { events, eventParticipations, people } from "@/db/schema";
 import { isEmailConfigured, sendVendorRegistrationEmails } from "@/lib/email";
-import { r2PublicUrl } from "@/lib/r2";
+import { presignDocDownload } from "@/lib/r2";
 import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 import type { VendorState } from "./vendor-state";
 
-function docUrl(key: string): string | undefined {
+async function docUrl(key: string): Promise<string | undefined> {
   if (!key) return undefined;
   try {
-    return r2PublicUrl(key);
+    return await presignDocDownload(key); // short-lived signed link (private)
   } catch {
     return undefined;
   }
@@ -193,8 +193,8 @@ export async function submitVendorRegistration(
           feeLabel,
           notes: notes || undefined,
           isFood,
-          permitUrl: isFood ? docUrl(permitDocKey) : undefined,
-          insuranceUrl: isFood ? docUrl(insuranceDocKey) : undefined,
+          permitUrl: isFood ? await docUrl(permitDocKey) : undefined,
+          insuranceUrl: isFood ? await docUrl(insuranceDocKey) : undefined,
         },
         PUMPKIN_FEST.title,
       );

@@ -7,10 +7,75 @@
  */
 
 import "server-only";
-import { and, asc, eq, gte, isNotNull, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
-import { companies, events } from "@/db/schema";
+import { companies, events, eventParticipations } from "@/db/schema";
 import type { PublicEvent } from "@/lib/events";
+
+export type EventRegistration = {
+  id: number;
+  type: string;
+  status: string;
+  feeAmountCents: number | null;
+  paymentStatus: string | null;
+  permitDocKey: string | null;
+  insuranceDocKey: string | null;
+  createdAt: string;
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  products: string;
+  spaces: number | null;
+  notes: string | null;
+};
+
+/** Vendor/registration submissions for an event (from the public forms). */
+export async function getEventRegistrations(eventId: number): Promise<EventRegistration[]> {
+  try {
+    const rows = await getDb()
+      .select({
+        id: eventParticipations.id,
+        type: eventParticipations.type,
+        status: eventParticipations.status,
+        feeAmountCents: eventParticipations.feeAmountCents,
+        paymentStatus: eventParticipations.paymentStatus,
+        permitDocKey: eventParticipations.permitDocKey,
+        insuranceDocKey: eventParticipations.insuranceDocKey,
+        createdAt: eventParticipations.createdAt,
+        data: eventParticipations.applicationData,
+        notes: eventParticipations.notes,
+      })
+      .from(eventParticipations)
+      .where(eq(eventParticipations.eventId, eventId))
+      .orderBy(desc(eventParticipations.createdAt));
+
+    return rows.map((r) => {
+      const d = (r.data ?? {}) as Record<string, unknown>;
+      const str = (v: unknown) => (typeof v === "string" ? v : "");
+      return {
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        feeAmountCents: r.feeAmountCents,
+        paymentStatus: r.paymentStatus,
+        permitDocKey: r.permitDocKey,
+        insuranceDocKey: r.insuranceDocKey,
+        createdAt: r.createdAt ? r.createdAt.toISOString() : "",
+        businessName: str(d.businessName),
+        contactName: str(d.contactName),
+        email: str(d.email),
+        phone: str(d.phone),
+        products: str(d.products),
+        spaces: typeof d.spaces === "number" ? d.spaces : null,
+        notes: r.notes ?? (typeof d.notes === "string" ? d.notes : null),
+      };
+    });
+  } catch (err) {
+    console.error("getEventRegistrations failed", err);
+    return [];
+  }
+}
 
 const etDate = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/New_York",

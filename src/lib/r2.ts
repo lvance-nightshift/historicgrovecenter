@@ -85,3 +85,47 @@ export function r2PublicUrl(key: string): string {
   const base = requireEnv("R2_PUBLIC_URL").replace(/\/$/, "");
   return `${base}/${key.replace(/^\//, "")}`;
 }
+
+/* ----------------------------------------------------------------------- *
+ * Private documents (food-vendor permits / insurance).
+ *
+ * These must NOT be in the public media bucket. Set R2_DOCS_BUCKET to a
+ * SEPARATE bucket with public access turned OFF. Uploads go through the
+ * server (no browser CORS needed) and are only ever read via short-lived
+ * signed URLs. Falls back to the media bucket if unset — in which case the
+ * docs are NOT actually private, so configure it before relying on this.
+ * ----------------------------------------------------------------------- */
+
+function docsBucket(): string {
+  return process.env.R2_DOCS_BUCKET || requireEnv("R2_BUCKET");
+}
+
+/** True when a dedicated private docs bucket is configured. */
+export function docsBucketConfigured(): boolean {
+  return Boolean(process.env.R2_DOCS_BUCKET);
+}
+
+/** Server-side upload of a private document to the docs bucket. */
+export async function putDoc(
+  key: string,
+  body: Uint8Array,
+  contentType: string,
+): Promise<void> {
+  await getR2().send(
+    new PutObjectCommand({
+      Bucket: docsBucket(),
+      Key: key,
+      ContentType: contentType,
+      Body: body,
+    }),
+  );
+}
+
+/** Short-lived signed URL to view a private document (default 7 days, the max). */
+export function presignDocDownload(
+  key: string,
+  expiresInSeconds = 604800,
+): Promise<string> {
+  const command = new GetObjectCommand({ Bucket: docsBucket(), Key: key });
+  return getSignedUrl(getR2(), command, { expiresIn: expiresInSeconds });
+}

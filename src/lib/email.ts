@@ -146,7 +146,7 @@ export async function sendVendorRegistrationEmails(
       reg.notes ? `Notes:     ${reg.notes}` : null,
       "",
       reg.isFood
-        ? "Follow up to confirm the space and collect payment. The permit + certificate of insurance are linked above."
+        ? "Follow up to confirm the space and collect payment. The permit + insurance links above are private and expire in ~7 days — they're also always available on the admin registrations page."
         : "Follow up to confirm the booth space and collect payment.",
     ]
       .filter((l) => l !== null)

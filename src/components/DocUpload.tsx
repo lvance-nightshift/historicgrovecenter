@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 
 const ALLOWED = ["application/pdf", "image/jpeg", "image/png"];
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (server-side upload)
 
 /*
  * A single-file uploader for a food vendor's permit / insurance doc. Uploads
@@ -26,25 +26,17 @@ export default function DocUpload({ name, label }: { name: string; label: string
     }
     if (file.size > MAX_BYTES) {
       setStatus("error");
-      setMsg("File is too large (max 10 MB).");
+      setMsg("File is too large (max 4 MB).");
       return;
     }
     setStatus("uploading");
     setFileName(file.name);
     try {
-      const res = await fetch("/api/pumpkin-fest/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
-      });
-      if (!res.ok) throw new Error("presign failed");
-      const { key, uploadUrl } = await res.json();
-      const put = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!put.ok) throw new Error("upload failed");
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/pumpkin-fest/upload", { method: "POST", body: fd });
+      if (!res.ok) throw new Error("upload failed");
+      const { key } = await res.json();
       setObjectKey(key);
       setStatus("done");
     } catch {

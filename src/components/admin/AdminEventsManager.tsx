@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   adminCreateEvent,
   adminUpdateEvent,
@@ -165,6 +166,9 @@ export default function AdminEventsManager({
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm">
+              <Link href={`/admin/events/${e.id}/registrations`} className="font-medium text-grove hover:underline">
+                Registrations
+              </Link>
               <button type="button" onClick={() => openEdit(e)} className="font-medium text-grove hover:underline">Edit</button>
               <button type="button" onClick={() => remove(e.id)} disabled={busy} className="text-brick-dark hover:underline">Delete</button>
             </div>
