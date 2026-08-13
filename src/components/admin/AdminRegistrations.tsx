@@ -11,8 +11,12 @@ import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 import type { EventRegistration } from "@/lib/events-db";
 
 const STATUSES = ["pending", "approved", "waitlisted", "rejected", "cancelled"];
+// Single-line fields + selects: fixed height so text inputs, number inputs, and
+// native <select> boxes all line up. Textareas use `area` (auto height).
 const input =
-  "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
+  "mt-1 h-10 w-full box-border rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
+const area =
+  "mt-1 w-full box-border rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
 
 function typeLabel(t: string) {
   return t === "food_vendor" ? "Food" : t === "vendor" ? "Craft" : t.replace("_", " ");
@@ -215,7 +219,7 @@ export default function AdminRegistrations({
                 </div>
                 <label className="block text-sm">
                   <span className="font-medium text-foreground">{isFood ? "Serving" : "Selling"}</span>
-                  <textarea name="products" defaultValue={r.products} rows={2} className={input} />
+                  <textarea name="products" defaultValue={r.products} rows={2} className={area} />
                 </label>
                 <div className="grid gap-3 sm:grid-cols-3">
                   <label className="block text-sm">
@@ -240,7 +244,7 @@ export default function AdminRegistrations({
                 </div>
                 <label className="block text-sm">
                   <span className="font-medium text-foreground">Notes</span>
-                  <textarea name="notes" defaultValue={r.notes ?? ""} rows={2} className={input} />
+                  <textarea name="notes" defaultValue={r.notes ?? ""} rows={2} className={area} />
                 </label>
 
                 {isFood && (
