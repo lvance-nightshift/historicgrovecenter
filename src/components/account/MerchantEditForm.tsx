@@ -216,27 +216,23 @@ export default function MerchantEditForm({
         </div>
 
         {error && <p className="text-sm text-brick-dark">{error}</p>}
+        {saved && !dirty && !pending && (
+          <p className="text-sm font-medium text-grove">Saved ✓</p>
+        )}
 
-        {/* Floating, dirty-aware save button */}
-        <button
-          type="submit"
-          disabled={pending || (!dirty && !saved)}
-          className={`fixed bottom-6 right-6 z-50 rounded-full px-6 py-3 text-sm font-semibold shadow-lg transition-colors ${
-            dirty
-              ? "bg-brick text-background hover:bg-brick-dark"
-              : saved
-                ? "bg-grove text-background"
-                : "border border-border bg-surface text-muted"
-          }`}
-        >
-          {pending
-            ? "Saving…"
-            : dirty
-              ? "Save changes"
-              : saved
-                ? "Saved ✓"
-                : "Save changes"}
-        </button>
+        {/* Floating save — only while there are unsaved changes, so it never
+            overlays the rest of the page (e.g. the Events section below). */}
+        {(dirty || pending) && (
+          <button
+            type="submit"
+            disabled={pending}
+            className={`fixed bottom-6 right-6 z-50 rounded-full px-6 py-3 text-sm font-semibold text-background shadow-lg transition-colors ${
+              pending ? "bg-grove" : "bg-brick hover:bg-brick-dark"
+            }`}
+          >
+            {pending ? "Saving…" : "Save changes"}
+          </button>
+        )}
       </form>
   );
 }
