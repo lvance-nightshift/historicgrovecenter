@@ -8,6 +8,7 @@ import {
   setMerchantEventPublished,
 } from "@/app/account/events-actions";
 import type { MerchantEvent } from "@/lib/events-db";
+import { isoToEtLocalInput, etLocalInputToIso } from "@/lib/datetime";
 
 const input =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -22,14 +23,6 @@ type Form = {
 };
 
 const blank: Form = { title: "", start: "", end: "", location: "", description: "", published: true };
-
-function toLocalInput(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "";
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
 
 function formatWhen(iso: string | null): string {
   if (!iso) return "Date TBD";
@@ -66,8 +59,8 @@ export default function MerchantEventsManager({
   function openEdit(e: MerchantEvent) {
     setForm({
       title: e.title,
-      start: toLocalInput(e.startAt),
-      end: toLocalInput(e.endAt),
+      start: isoToEtLocalInput(e.startAt),
+      end: isoToEtLocalInput(e.endAt),
       location: e.location ?? "",
       description: e.description ?? "",
       published: e.published,
@@ -82,8 +75,8 @@ export default function MerchantEventsManager({
 
   const payload = () => ({
     title: form.title,
-    startAt: form.start ? new Date(form.start).toISOString() : null,
-    endAt: form.end ? new Date(form.end).toISOString() : null,
+    startAt: etLocalInputToIso(form.start),
+    endAt: etLocalInputToIso(form.end),
     location: form.location,
     description: form.description,
     published: form.published,
@@ -124,23 +117,36 @@ export default function MerchantEventsManager({
 
   function remove(id: number) {
     if (!confirm("Delete this event?")) return;
+    setError(null);
     startTransition(async () => {
-      await deleteMerchantEvent(id);
-      setItems((prev) => prev.filter((it) => it.id !== id));
+      try {
+        await deleteMerchantEvent(id);
+        setItems((prev) => prev.filter((it) => it.id !== id));
+      } catch {
+        setError("Could not delete the event. Please try again.");
+      }
     });
   }
 
   function togglePublished(e: MerchantEvent) {
+    setError(null);
     startTransition(async () => {
-      await setMerchantEventPublished(e.id, !e.published);
-      setItems((prev) =>
-        prev.map((it) => (it.id === e.id ? { ...it, published: !e.published } : it)),
-      );
+      try {
+        await setMerchantEventPublished(e.id, !e.published);
+        setItems((prev) =>
+          prev.map((it) => (it.id === e.id ? { ...it, published: !e.published } : it)),
+        );
+      } catch {
+        setError("Could not update the event. Please try again.");
+      }
     });
   }
 
   return (
     <div className="space-y-4">
+      {error && editing === null && (
+        <p className="text-sm text-brick-dark">{error}</p>
+      )}
       {items.length === 0 && editing !== "new" && (
         <p className="text-sm text-muted">
           No events yet. Add concerts, sales, workshops — they show on your page.

@@ -20,6 +20,7 @@ import {
   roles,
   mediaAttachments,
   merchantCategories,
+  events,
 } from "@/db/schema";
 import { normalizeCategories } from "@/lib/merchants";
 import { getActor, isAdmin, type RoleScope } from "@/lib/auth/authorize";
@@ -321,7 +322,10 @@ export async function deleteCompany(companyId: number): Promise<void> {
     .where(
       and(eq(roleAssignments.scope, "company"), eq(roleAssignments.scopeId, companyId)),
     );
-  // Company row: cascades kind assignments + memberships; events.owner is set null.
+  // Remove this company's business events (schema would otherwise orphan them
+  // as owner-null, leaving them published on the public calendar).
+  await db.delete(events).where(eq(events.ownerCompanyId, companyId));
+  // Company row: cascades kind assignments + memberships.
   await db.delete(companies).where(eq(companies.id, companyId));
   revalidatePath("/admin/companies");
   revalidatePath("/merchants");

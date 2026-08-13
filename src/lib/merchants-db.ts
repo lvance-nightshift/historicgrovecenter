@@ -110,6 +110,17 @@ export async function getMerchantBySlug(slug: string): Promise<Merchant | null> 
     const [row] = await db
       .select({ ...selection, id: companies.id })
       .from(companies)
+      .innerJoin(
+        companyKindAssignments,
+        eq(companyKindAssignments.companyId, companies.id),
+      )
+      .innerJoin(
+        companyKinds,
+        and(
+          eq(companyKinds.id, companyKindAssignments.kindId),
+          eq(companyKinds.key, "merchant"),
+        ),
+      )
       .leftJoin(media, eq(media.id, companies.logoMediaId))
       .where(and(eq(companies.slug, slug), eq(companies.published, true)))
       .limit(1);

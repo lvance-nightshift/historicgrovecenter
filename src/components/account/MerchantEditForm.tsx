@@ -141,8 +141,10 @@ export default function MerchantEditForm({
             <RichTextEditor
               value={f.description}
               onChange={(html) => {
-                setF((prev) => ({ ...prev, description: html }));
-                markDirty();
+                setF((prev) => {
+                  if (html !== prev.description) markDirty();
+                  return { ...prev, description: html };
+                });
               }}
             />
           </div>

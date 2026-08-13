@@ -7,6 +7,7 @@ import {
   adminDeleteEvent,
 } from "@/app/admin/events-actions";
 import type { AdminEvent } from "@/lib/events-db";
+import { isoToEtLocalInput, etLocalInputToIso } from "@/lib/datetime";
 
 const input =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -34,13 +35,6 @@ const blank: Form = {
   published: true,
 };
 
-function toLocalInput(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "";
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
 function formatWhen(iso: string | null): string {
   if (!iso) return "Date TBD";
   const d = new Date(iso);
@@ -81,8 +75,8 @@ export default function AdminEventsManager({
       title: e.title,
       type: e.type === "business" ? "business" : "association",
       ownerCompanyId: e.ownerCompanyId ? String(e.ownerCompanyId) : "",
-      start: toLocalInput(e.startAt),
-      end: toLocalInput(e.endAt),
+      start: isoToEtLocalInput(e.startAt),
+      end: isoToEtLocalInput(e.endAt),
       location: e.location ?? "",
       description: e.description ?? "",
       published: e.published,
@@ -96,8 +90,8 @@ export default function AdminEventsManager({
     type: form.type,
     ownerCompanyId:
       form.type === "business" && form.ownerCompanyId ? Number(form.ownerCompanyId) : null,
-    startAt: form.start ? new Date(form.start).toISOString() : null,
-    endAt: form.end ? new Date(form.end).toISOString() : null,
+    startAt: etLocalInputToIso(form.start),
+    endAt: etLocalInputToIso(form.end),
     location: form.location,
     description: form.description,
     published: form.published,
