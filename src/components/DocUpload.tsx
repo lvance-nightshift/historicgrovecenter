@@ -6,14 +6,29 @@ const ALLOWED = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_BYTES = 4 * 1024 * 1024; // 4 MB (server-side upload)
 
 /*
- * A single-file uploader for a food vendor's permit / insurance doc. Uploads
- * straight to R2 via a public presigned URL and exposes the resulting object
- * key through a hidden <input name={name}> so it submits with the form.
+ * Single-file uploader for a food vendor's permit / insurance doc. Uploads
+ * through the server into the private docs bucket and exposes the resulting
+ * object key via a hidden <input name={name}> so it submits with the form.
+ *
+ * initialKey  — pre-existing key (admin edit); preserved unless replaced/removed.
+ * adminView   — show "View" (admin-gated link) + "Remove" controls.
  */
-export default function DocUpload({ name, label }: { name: string; label: string }) {
-  const [objectKey, setObjectKey] = useState("");
-  const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
-  const [fileName, setFileName] = useState("");
+export default function DocUpload({
+  name,
+  label,
+  initialKey = "",
+  adminView = false,
+}: {
+  name: string;
+  label: string;
+  initialKey?: string;
+  adminView?: boolean;
+}) {
+  const [objectKey, setObjectKey] = useState(initialKey);
+  const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">(
+    initialKey ? "done" : "idle",
+  );
+  const [fileName, setFileName] = useState(initialKey ? "current file" : "");
   const [msg, setMsg] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -45,6 +60,12 @@ export default function DocUpload({ name, label }: { name: string; label: string
     }
   }
 
+  function remove() {
+    setObjectKey("");
+    setStatus("idle");
+    setFileName("");
+  }
+
   return (
     <div className="text-sm">
       <span className="font-medium text-foreground">{label}</span>
@@ -61,6 +82,21 @@ export default function DocUpload({ name, label }: { name: string; label: string
         {status === "uploading" && <span className="text-xs text-muted">Uploading…</span>}
         {status === "done" && (
           <span className="text-xs font-medium text-grove">✓ {fileName}</span>
+        )}
+        {adminView && objectKey && (
+          <a
+            href={`/api/admin/doc?key=${encodeURIComponent(objectKey)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-medium text-grove hover:underline"
+          >
+            View ↗
+          </a>
+        )}
+        {adminView && objectKey && (
+          <button type="button" onClick={remove} className="text-xs text-brick-dark hover:underline">
+            Remove
+          </button>
         )}
         <input
           ref={inputRef}
