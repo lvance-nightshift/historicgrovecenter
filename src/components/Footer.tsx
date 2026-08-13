@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { nav, site } from "@/lib/site";
+import FooterSignIn from "@/components/FooterSignIn";
 
 export default function Footer() {
   const year = 2026; // Static build; bump as needed or wire to a build-time value.
@@ -59,11 +60,14 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-background/60 sm:flex-row sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs text-background/60 sm:flex-row sm:px-6">
           <p>
             &copy; {year} {site.association}. All rights reserved.
           </p>
-          <p>{site.city}</p>
+          <div className="flex items-center gap-4">
+            <FooterSignIn />
+            <p>{site.city}</p>
+          </div>
         </div>
       </div>
     </footer>

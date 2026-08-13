@@ -101,7 +101,7 @@ export default function Header() {
               Admin
             </Link>
           )}
-          {signedIn ? (
+          {signedIn && (
             <button
               type="button"
               onClick={signOut}
@@ -109,13 +109,6 @@ export default function Header() {
             >
               Sign out
             </button>
-          ) : (
-            <Link
-              href="/auth/sign-in"
-              className="ml-1 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:border-grove/50 hover:text-grove"
-            >
-              Sign in
-            </Link>
           )}
         </nav>
 
@@ -172,7 +165,7 @@ export default function Header() {
               Admin
             </Link>
           )}
-          {signedIn ? (
+          {signedIn && (
             <button
               type="button"
               onClick={signOut}
@@ -180,14 +173,6 @@ export default function Header() {
             >
               Sign out
             </button>
-          ) : (
-            <Link
-              href="/auth/sign-in"
-              onClick={() => setOpen(false)}
-              className="mt-1 block rounded-md border border-border px-3 py-2.5 text-base font-medium text-foreground"
-            >
-              Sign in
-            </Link>
           )}
         </nav>
       )}
