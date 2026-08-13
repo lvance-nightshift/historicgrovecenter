@@ -31,7 +31,13 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const markDirty = () => {
+    setDirty(true);
+    setSaved(false);
+  };
 
   const [f, setF] = useState({
     name: company.name ?? "",
@@ -49,12 +55,12 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setF((prev) => ({ ...prev, [k]: e.target.value }));
-    setSaved(false);
+    markDirty();
   };
 
   const toggleCategory = (c: string) => {
     setCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
-    setSaved(false);
+    markDirty();
   };
 
   const preview: Merchant = {
@@ -77,6 +83,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
       try {
         await updateMyCompany({ companyId: company.id, ...f, categories, hoursByDay });
         setSaved(true);
+        setDirty(false);
         router.refresh();
       } catch {
         setError("Could not save. Please try again.");
@@ -99,41 +106,40 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
           <input value={f.name} onChange={set("name")} className={input} />
         </label>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className={label}>
-            <span className={labelText}>
-              Categories <span className="text-muted">(choose any that fit)</span>
-            </span>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => {
-                const on = categories.includes(c);
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => toggleCategory(c)}
-                    className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                      on
-                        ? "bg-grove text-background"
-                        : "border border-border bg-background text-foreground/70 hover:border-grove/40"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
+        <div className={label}>
+          <span className={labelText}>
+            Categories <span className="text-muted">(choose any that fit)</span>
+          </span>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {CATEGORIES.map((c) => {
+              const on = categories.includes(c);
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => toggleCategory(c)}
+                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                    on
+                      ? "bg-grove text-background"
+                      : "border border-border bg-background text-foreground/70 hover:border-grove/40"
+                  }`}
+                >
+                  {c}
+                </button>
+              );
+            })}
           </div>
-          <label className={label}>
-            <span className={labelText}>Tagline</span>
-            <input
-              value={f.tagline}
-              onChange={set("tagline")}
-              placeholder="One short line about your business"
-              className={input}
-            />
-          </label>
         </div>
+
+        <label className={label}>
+          <span className={labelText}>Tagline</span>
+          <input
+            value={f.tagline}
+            onChange={set("tagline")}
+            placeholder="One short line about your business"
+            className={input}
+          />
+        </label>
 
         <div className={label}>
           <span className={labelText}>Description</span>
@@ -142,7 +148,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
               value={f.description}
               onChange={(html) => {
                 setF((prev) => ({ ...prev, description: html }));
-                setSaved(false);
+                markDirty();
               }}
             />
           </div>
@@ -155,7 +161,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
               value={hoursByDay}
               onChange={(next) => {
                 setHoursByDay(next);
-                setSaved(false);
+                markDirty();
               }}
             />
           </div>
@@ -217,18 +223,26 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
 
         {error && <p className="text-sm text-brick-dark">{error}</p>}
 
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded-full bg-grove px-6 py-2.5 text-sm font-semibold text-background hover:bg-grove-dark disabled:opacity-60"
-          >
-            {pending ? "Saving…" : "Save changes"}
-          </button>
-          {saved && !pending && (
-            <span className="text-sm font-medium text-grove">Saved ✓</span>
-          )}
-        </div>
+        {/* Floating, dirty-aware save button */}
+        <button
+          type="submit"
+          disabled={pending || (!dirty && !saved)}
+          className={`fixed bottom-6 right-6 z-50 rounded-full px-6 py-3 text-sm font-semibold shadow-lg transition-colors ${
+            dirty
+              ? "bg-brick text-background hover:bg-brick-dark"
+              : saved
+                ? "bg-grove text-background"
+                : "border border-border bg-surface text-muted"
+          }`}
+        >
+          {pending
+            ? "Saving…"
+            : dirty
+              ? "Save changes"
+              : saved
+                ? "Saved ✓"
+                : "Save changes"}
+        </button>
       </form>
 
       {/* Live preview */}
