@@ -8,9 +8,8 @@
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { eventParticipations } from "@/db/schema";
+import { eventParticipations, events } from "@/db/schema";
 import { getActor, isAdmin } from "@/lib/auth/authorize";
-import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 
 async function assertAdmin() {
   const actor = await getActor();
@@ -46,8 +45,13 @@ export async function updateRegistration(
   const db = getDb();
 
   const [row] = await db
-    .select({ data: eventParticipations.applicationData, eventId: eventParticipations.eventId })
+    .select({
+      data: eventParticipations.applicationData,
+      eventId: eventParticipations.eventId,
+      boothFeeCents: events.boothFeeCents,
+    })
     .from(eventParticipations)
+    .leftJoin(events, eq(events.id, eventParticipations.eventId))
     .where(eq(eventParticipations.id, id));
   if (!row) throw new Error("Not found");
 
@@ -55,13 +59,14 @@ export async function updateRegistration(
   let spaces = Number(input.spaces);
   if (!Number.isFinite(spaces) || spaces < 1) spaces = 1;
   if (spaces > 10) spaces = 10;
+  const feeCents = row.boothFeeCents != null ? spaces * row.boothFeeCents : null;
 
   await db
     .update(eventParticipations)
     .set({
       status: input.status as never,
       paymentStatus: clean(input.paymentStatus),
-      feeAmountCents: spaces * PUMPKIN_FEST.boothFeeCents,
+      feeAmountCents: feeCents,
       permitDocKey: clean(input.permitDocKey),
       insuranceDocKey: clean(input.insuranceDocKey),
       permitVerified: Boolean(input.permitVerified),

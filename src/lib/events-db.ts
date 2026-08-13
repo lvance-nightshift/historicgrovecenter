@@ -222,6 +222,7 @@ export type AdminEvent = {
   ticketUrl: string | null;
   vendorAppsOpen: boolean;
   foodAppsOpen: boolean;
+  boothFeeCents: number | null;
 };
 
 /** Every event (association + business) for the admin events manager. */
@@ -242,6 +243,7 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         ticketUrl: events.ticketUrl,
         vendorAppsOpen: events.vendorAppsOpen,
         foodAppsOpen: events.foodAppsOpen,
+        boothFeeCents: events.boothFeeCents,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
@@ -267,6 +269,7 @@ export type RegisterableEvent = {
   description: string | null;
   vendorAppsOpen: boolean;
   foodAppsOpen: boolean;
+  boothFeeCents: number | null;
 };
 
 /**
@@ -289,6 +292,7 @@ export async function getRegisterableEvent(
         description: events.description,
         vendorAppsOpen: events.vendorAppsOpen,
         foodAppsOpen: events.foodAppsOpen,
+        boothFeeCents: events.boothFeeCents,
       })
       .from(events)
       .where(

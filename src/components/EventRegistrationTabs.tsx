@@ -12,16 +12,22 @@ export default function EventRegistrationTabs({
   eventSlug,
   vendorOpen,
   foodOpen,
+  boothFeeCents = null,
 }: {
   eventSlug: string;
   vendorOpen: boolean;
   foodOpen: boolean;
+  boothFeeCents?: number | null;
 }) {
   const [tab, setTab] = useState<"vendor" | "food">(vendorOpen ? "vendor" : "food");
 
   if (!vendorOpen || !foodOpen) {
     return (
-      <EventRegistrationForm eventSlug={eventSlug} variant={foodOpen ? "food" : "vendor"} />
+      <EventRegistrationForm
+        eventSlug={eventSlug}
+        variant={foodOpen ? "food" : "vendor"}
+        boothFeeCents={boothFeeCents}
+      />
     );
   }
 
@@ -52,7 +58,12 @@ export default function EventRegistrationTabs({
 
       <div className="mt-5">
         {/* Remount on tab change so each form has its own clean state. */}
-        <EventRegistrationForm key={tab} eventSlug={eventSlug} variant={tab} />
+        <EventRegistrationForm
+          key={tab}
+          eventSlug={eventSlug}
+          variant={tab}
+          boothFeeCents={boothFeeCents}
+        />
       </div>
     </div>
   );

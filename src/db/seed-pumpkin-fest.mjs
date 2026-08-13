@@ -26,10 +26,10 @@ const description =
 const [row] = await sql`
   INSERT INTO events
     (slug, title, type, start_at, end_at, location, description,
-     published, vendor_apps_open)
+     published, vendor_apps_open, booth_fee_cents)
   VALUES
     (${slug}, ${title}, 'association', ${startAt}, ${endAt}, ${location},
-     ${description}, true, true)
+     ${description}, true, true, 4500)
   ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
     start_at = EXCLUDED.start_at,
@@ -37,6 +37,7 @@ const [row] = await sql`
     location = EXCLUDED.location,
     description = EXCLUDED.description,
     vendor_apps_open = true,
+    booth_fee_cents = 4500,
     updated_at = now()
   RETURNING id, slug
 `;

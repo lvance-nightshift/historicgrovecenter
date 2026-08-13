@@ -7,7 +7,6 @@ import {
   setRegistrationVerification,
 } from "@/app/admin/registration-actions";
 import DocUpload from "@/components/DocUpload";
-import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 import type { EventRegistration } from "@/lib/events-db";
 
 const STATUSES = ["pending", "approved", "waitlisted", "rejected", "cancelled"];
@@ -24,8 +23,10 @@ function typeLabel(t: string) {
 
 export default function AdminRegistrations({
   registrations,
+  boothFeeCents,
 }: {
   registrations: EventRegistration[];
+  boothFeeCents: number | null;
 }) {
   const [items, setItems] = useState(registrations);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -66,7 +67,7 @@ export default function AdminRegistrations({
                   notes: edit.notes || null,
                   permitDocKey: edit.permitDocKey || null,
                   insuranceDocKey: edit.insuranceDocKey || null,
-                  feeAmountCents: spaces * PUMPKIN_FEST.boothFeeCents,
+                  feeAmountCents: boothFeeCents != null ? spaces * boothFeeCents : null,
                 }
               : it,
           ),

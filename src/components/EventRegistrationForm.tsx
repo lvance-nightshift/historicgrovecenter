@@ -33,14 +33,21 @@ function SubmitButton({ label }: { label: string }) {
  * insurance uploads. The `eventSlug` is submitted hidden and re-validated
  * server-side.
  */
+function dollars(cents: number): string {
+  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+}
+
 export default function EventRegistrationForm({
   eventSlug,
   variant = "vendor",
+  boothFeeCents = null,
 }: {
   eventSlug: string;
   variant?: "vendor" | "food";
+  boothFeeCents?: number | null;
 }) {
   const isFood = variant === "food";
+  const hasFee = boothFeeCents != null && boothFeeCents > 0;
   const [state, formAction] = useActionState(
     submitEventRegistration,
     initialVendorState,
@@ -108,6 +115,23 @@ export default function EventRegistrationForm({
       </label>
 
       <label className="block text-sm">
+        <span className="font-medium text-foreground">Spaces</span>
+        <select name="spaces" defaultValue="1" className={inputClass}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <option key={n} value={n}>
+              {n} space{n > 1 ? "s" : ""}
+              {hasFee ? ` — ${dollars(n * boothFeeCents!)}` : ""}
+            </option>
+          ))}
+        </select>
+        {hasFee && (
+          <span className="mt-1 block text-xs text-muted">
+            {dollars(boothFeeCents!)} per space.
+          </span>
+        )}
+      </label>
+
+      <label className="block text-sm">
         <span className="font-medium text-foreground">
           Anything we should know? <span className="text-muted">(optional)</span>
         </span>
@@ -149,8 +173,9 @@ export default function EventRegistrationForm({
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" name="agree" className="mt-1" />
         <span className="text-foreground/80">
-          I understand that submitting this form requests a space pending
-          confirmation from the Grove Center, and that spaces may be limited.
+          {hasFee
+            ? `I understand the ${dollars(boothFeeCents!)} fee per space, that spaces may be limited, and that submitting this form requests a space pending confirmation from the Grove Center.`
+            : "I understand that submitting this form requests a space pending confirmation from the Grove Center, and that spaces may be limited."}
         </span>
       </label>
       <Err msg={state.fieldErrors?.agree} />

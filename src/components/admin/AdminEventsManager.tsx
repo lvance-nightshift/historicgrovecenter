@@ -26,6 +26,7 @@ type Form = {
   ticketUrl: string;
   vendorRegistration: boolean;
   foodRegistration: boolean;
+  boothFee: string; // dollars per space; blank = free
 };
 
 const blank: Form = {
@@ -40,6 +41,7 @@ const blank: Form = {
   ticketUrl: "",
   vendorRegistration: false,
   foodRegistration: false,
+  boothFee: "",
 };
 
 function formatWhen(iso: string | null): string {
@@ -90,6 +92,7 @@ export default function AdminEventsManager({
       ticketUrl: e.ticketUrl ?? "",
       vendorRegistration: e.vendorAppsOpen,
       foodRegistration: e.foodAppsOpen,
+      boothFee: e.boothFeeCents != null ? String(e.boothFeeCents / 100) : "",
     });
     setEditing(e.id);
     setError(null);
@@ -108,7 +111,15 @@ export default function AdminEventsManager({
     ticketUrl: form.ticketUrl,
     vendorRegistration: form.vendorRegistration,
     foodRegistration: form.foodRegistration,
+    boothFee: form.boothFee,
   });
+
+  const feeToCents = (v: string): number | null => {
+    const t = v.replace(/[$,\s]/g, "").trim();
+    if (!t) return null;
+    const d = Number(t);
+    return Number.isFinite(d) && d >= 0 ? Math.round(d * 100) : null;
+  };
 
   function rowFrom(id: number): AdminEvent {
     const p = payload();
@@ -126,6 +137,7 @@ export default function AdminEventsManager({
       ticketUrl: form.ticketUrl || null,
       vendorAppsOpen: form.vendorRegistration,
       foodAppsOpen: form.foodRegistration,
+      boothFeeCents: feeToCents(form.boothFee),
     };
   }
 
@@ -279,6 +291,24 @@ export default function AdminEventsManager({
               Takes food-truck registrations (permit &amp; insurance uploads required)
             </span>
           </label>
+          {(form.vendorRegistration || form.foodRegistration) && (
+            <label className="block text-sm">
+              <span className="font-medium text-foreground">
+                Fee per space <span className="text-muted">(optional — leave blank for free)</span>
+              </span>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-muted">$</span>
+                <input
+                  value={form.boothFee}
+                  onChange={(e) => setForm({ ...form, boothFee: e.target.value })}
+                  inputMode="decimal"
+                  placeholder="45"
+                  className={`${input} mt-0 max-w-[8rem]`}
+                />
+                <span className="text-sm text-muted">per vendor space</span>
+              </div>
+            </label>
+          )}
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} />
             <span className="text-foreground/80">Published</span>

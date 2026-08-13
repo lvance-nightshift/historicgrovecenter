@@ -21,6 +21,10 @@ import type { VendorState } from "./vendor-state";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function dollars(cents: number): string {
+  return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+}
+
 async function docUrl(key: string): Promise<string | undefined> {
   if (!key) return undefined;
   try {
@@ -86,6 +90,10 @@ export async function submitEventRegistration(
   const agree = formData.get("agree") != null;
   const permitDocKey = String(formData.get("permitDocKey") ?? "").trim();
   const insuranceDocKey = String(formData.get("insuranceDocKey") ?? "").trim();
+  let spaces = Number(formData.get("spaces") ?? "1");
+  if (!Number.isFinite(spaces) || spaces < 1) spaces = 1;
+  if (spaces > 5) spaces = 5;
+  spaces = Math.floor(spaces);
 
   const fieldErrors: VendorState["fieldErrors"] = {};
   if (!businessName) fieldErrors.businessName = "Please enter your business or booth name.";
@@ -115,6 +123,7 @@ export async function submitEventRegistration(
     title: string;
     startAt: Date | null;
     location: string | null;
+    boothFeeCents: number | null;
   } | null = null;
   if (isDbConfigured()) {
     try {
@@ -127,6 +136,7 @@ export async function submitEventRegistration(
           published: events.published,
           vendorAppsOpen: events.vendorAppsOpen,
           foodAppsOpen: events.foodAppsOpen,
+          boothFeeCents: events.boothFeeCents,
         })
         .from(events)
         .where(eq(events.slug, slug))
@@ -140,7 +150,13 @@ export async function submitEventRegistration(
             : "This event isn't accepting vendor registrations right now.",
         };
       }
-      eventRow = { id: ev.id, title: ev.title, startAt: ev.startAt, location: ev.location };
+      eventRow = {
+        id: ev.id,
+        title: ev.title,
+        startAt: ev.startAt,
+        location: ev.location,
+        boothFeeCents: ev.boothFeeCents,
+      };
     } catch (err) {
       console.error("event-registration: event lookup failed", err);
       return {
@@ -150,6 +166,16 @@ export async function submitEventRegistration(
       };
     }
   }
+
+  // Fee is authoritative from the event (never trust the client): fee × spaces.
+  const perSpaceCents = eventRow?.boothFeeCents ?? null;
+  const feeCents = perSpaceCents ? perSpaceCents * spaces : null;
+  const feeLabel =
+    feeCents != null
+      ? spaces === 1
+        ? dollars(perSpaceCents!)
+        : `${dollars(feeCents)} (${spaces} × ${dollars(perSpaceCents!)})`
+      : undefined;
 
   // 1) Persist the registration (best-effort).
   let participationId: number | null = null;
@@ -177,6 +203,7 @@ export async function submitEventRegistration(
             personId,
             type: isFood ? "food_vendor" : "vendor",
             status: "pending",
+            feeAmountCents: feeCents,
             paymentStatus: "unpaid",
             permitDocKey: isFood ? permitDocKey || null : null,
             insuranceDocKey: isFood ? insuranceDocKey || null : null,
@@ -187,6 +214,7 @@ export async function submitEventRegistration(
               email,
               phone,
               products,
+              spaces,
               notes: notes || null,
               agreedToTerms: true,
               ...(isFood
@@ -216,6 +244,8 @@ export async function submitEventRegistration(
           email,
           phone,
           products,
+          spaces,
+          feeLabel,
           notes: notes || undefined,
           isFood,
           permitUrl: isFood ? await docUrl(permitDocKey) : undefined,

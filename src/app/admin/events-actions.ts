@@ -27,6 +27,7 @@ export type AdminEventInput = {
   ticketUrl?: string;
   vendorRegistration?: boolean;
   foodRegistration?: boolean;
+  boothFee?: string; // dollars, e.g. "45" or "45.00"; blank = no fee
 };
 
 function clean(v?: string): string | null {
@@ -37,6 +38,14 @@ function url(v?: string): string | null {
   const t = (v ?? "").trim();
   if (!t) return null;
   return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+}
+/** Parse a dollar amount ("45", "$45.00") to integer cents; blank/invalid → null. */
+function feeCents(v?: string): number | null {
+  const t = (v ?? "").replace(/[$,\s]/g, "").trim();
+  if (!t) return null;
+  const dollars = Number(t);
+  if (!Number.isFinite(dollars) || dollars < 0) return null;
+  return Math.round(dollars * 100);
 }
 function toDate(v?: string | null): Date | null {
   if (!v) return null;
@@ -73,6 +82,7 @@ export async function adminCreateEvent(input: AdminEventInput): Promise<number> 
       ticketUrl: url(input.ticketUrl),
       vendorAppsOpen: input.vendorRegistration ?? false,
       foodAppsOpen: input.foodRegistration ?? false,
+      boothFeeCents: feeCents(input.boothFee),
     })
     .returning({ id: events.id });
   revalidate();
@@ -97,6 +107,7 @@ export async function adminUpdateEvent(id: number, input: AdminEventInput): Prom
       ticketUrl: url(input.ticketUrl),
       vendorAppsOpen: input.vendorRegistration ?? false,
       foodAppsOpen: input.foodRegistration ?? false,
+      boothFeeCents: feeCents(input.boothFee),
       updatedAt: new Date(),
     })
     .where(eq(events.id, id));

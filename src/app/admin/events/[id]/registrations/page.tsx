@@ -18,7 +18,7 @@ export default async function RegistrationsPage({ params }: Params) {
   if (!Number.isInteger(eventId)) notFound();
 
   const [ev] = await getDb()
-    .select({ title: events.title })
+    .select({ title: events.title, boothFeeCents: events.boothFeeCents })
     .from(events)
     .where(eq(events.id, eventId));
   if (!ev) notFound();
@@ -38,7 +38,7 @@ export default async function RegistrationsPage({ params }: Params) {
         public forms.
       </p>
 
-      <AdminRegistrations registrations={regs} />
+      <AdminRegistrations registrations={regs} boothFeeCents={ev.boothFeeCents} />
     </div>
   );
 }

@@ -86,6 +86,7 @@ export default async function EventRegisterPage({
               eventSlug={event.slug}
               vendorOpen={event.vendorAppsOpen}
               foodOpen={event.foodAppsOpen}
+              boothFeeCents={event.boothFeeCents}
             />
           </div>
         </div>

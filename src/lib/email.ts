@@ -201,6 +201,8 @@ export type EventSignup = {
   email: string;
   phone: string;
   products: string;
+  spaces?: number;
+  feeLabel?: string; // e.g. "$90 (2 × $45)"; omitted when there's no fee
   notes?: string;
   isFood?: boolean;
   permitUrl?: string;
@@ -234,6 +236,8 @@ export async function sendEventRegistrationEmails(
       `Email:     ${reg.email}`,
       `Phone:     ${reg.phone}`,
       `${reg.isFood ? "Serving:  " : "Offering: "}${reg.products}`,
+      reg.spaces ? `Spaces:    ${reg.spaces}` : null,
+      reg.feeLabel ? `Fee:       ${reg.feeLabel}` : null,
       reg.isFood && reg.permitUrl ? `Permit:    ${reg.permitUrl}` : null,
       reg.isFood && reg.insuranceUrl ? `Insurance: ${reg.insuranceUrl}` : null,
       reg.notes ? `Notes:     ${reg.notes}` : null,
@@ -255,6 +259,13 @@ export async function sendEventRegistrationEmails(
       `Hi ${reg.contactName},`,
       "",
       `Thanks for registering ${reg.businessName} as a ${role} for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}.`,
+      ...(reg.spaces || reg.feeLabel
+        ? [
+            "",
+            reg.spaces ? `Spaces requested: ${reg.spaces}` : null,
+            reg.feeLabel ? `Fee:              ${reg.feeLabel}` : null,
+          ].filter((l) => l !== null)
+        : []),
       "",
       "This is a request to reserve a space — it isn't confirmed yet. Someone from the Grove Center will be in touch to confirm the details.",
       ...(reg.isFood
