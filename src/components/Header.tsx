@@ -2,23 +2,27 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { nav, site } from "@/lib/site";
+import { authClient } from "@/lib/auth/client";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMerchant, setIsMerchant] = useState(false);
 
-  // Show Admin / My Business links based on the viewer's roles.
+  // Show Sign in / Admin / My Business links based on the viewer's session.
   useEffect(() => {
     let active = true;
     fetch("/api/me")
       .then((r) => r.json())
       .then((d) => {
         if (!active) return;
+        setSignedIn(Boolean(d.signedIn));
         setIsAdmin(Boolean(d.isAdmin));
         setIsMerchant(Boolean(d.isMerchant));
       })
@@ -27,6 +31,16 @@ export default function Header() {
       active = false;
     };
   }, []);
+
+  async function signOut() {
+    await authClient.signOut().catch(() => {});
+    setSignedIn(false);
+    setIsAdmin(false);
+    setIsMerchant(false);
+    setOpen(false);
+    router.push("/");
+    router.refresh();
+  }
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -87,6 +101,22 @@ export default function Header() {
               Admin
             </Link>
           )}
+          {signedIn ? (
+            <button
+              type="button"
+              onClick={signOut}
+              className="ml-1 rounded-full px-4 py-2 text-sm font-medium text-foreground/70 transition-colors hover:text-grove"
+            >
+              Sign out
+            </button>
+          ) : (
+            <Link
+              href="/auth/sign-in"
+              className="ml-1 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:border-grove/50 hover:text-grove"
+            >
+              Sign in
+            </Link>
+          )}
         </nav>
 
         {/* Mobile toggle */}
@@ -140,6 +170,23 @@ export default function Header() {
               className="mt-1 block rounded-md bg-brass px-3 py-2.5 text-base font-semibold text-grove-dark"
             >
               Admin
+            </Link>
+          )}
+          {signedIn ? (
+            <button
+              type="button"
+              onClick={signOut}
+              className="mt-1 block w-full rounded-md px-3 py-2.5 text-left text-base font-medium text-foreground hover:bg-grove/10"
+            >
+              Sign out
+            </button>
+          ) : (
+            <Link
+              href="/auth/sign-in"
+              onClick={() => setOpen(false)}
+              className="mt-1 block rounded-md border border-border px-3 py-2.5 text-base font-medium text-foreground"
+            >
+              Sign in
             </Link>
           )}
         </nav>
