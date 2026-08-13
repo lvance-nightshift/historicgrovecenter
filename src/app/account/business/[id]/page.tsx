@@ -31,33 +31,18 @@ export default async function EditBusinessPage({ params }: Params) {
         <h1 className="font-serif text-3xl font-semibold text-grove">
           {company.name}
         </h1>
-        <div className="flex items-center gap-3 text-sm">
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              company.published
-                ? "bg-grove/10 text-grove"
-                : "bg-brass/20 text-brick-dark"
-            }`}
+        {company.slug && (
+          <Link
+            href={`/merchants/${company.slug}`}
+            className="text-sm font-medium text-grove hover:underline"
           >
-            {company.published ? "Live" : "Pending review"}
-          </span>
-          {company.published && company.slug && (
-            <Link
-              href={`/merchants/${company.slug}`}
-              className="font-medium text-grove hover:underline"
-            >
-              View live page ↗
-            </Link>
-          )}
-        </div>
+            View live page ↗
+          </Link>
+        )}
       </div>
-      {!company.published && (
-        <p className="mt-2 rounded-lg bg-brass/10 px-4 py-2.5 text-sm text-brick-dark">
-          Your listing isn&apos;t public yet — a Grove Center admin will review
-          and publish it. You can fill everything in now; it&apos;ll go live the
-          moment it&apos;s approved, and edits after that publish instantly.
-        </p>
-      )}
+      <p className="mt-2 text-sm text-muted">
+        Changes you save here go live on your page right away.
+      </p>
 
       <div className="mt-8">
         <MerchantEditForm company={company} />

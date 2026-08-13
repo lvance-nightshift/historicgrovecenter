@@ -16,6 +16,7 @@ import {
   media,
 } from "@/db/schema";
 import type { Merchant } from "./merchants";
+import { normalizeWeekHours } from "./hours";
 
 type Row = {
   slug: string | null;
@@ -26,6 +27,7 @@ type Row = {
   phone: string | null;
   website: string | null;
   hours: string | null;
+  hoursByDay: unknown;
   address: string | null;
   socialLinks: unknown;
   logoKey: string | null;
@@ -49,6 +51,7 @@ function toMerchant(r: Row): Merchant | null {
     phone: r.phone ?? undefined,
     website: r.website ?? undefined,
     hours: r.hours ?? undefined,
+    hoursByDay: normalizeWeekHours(r.hoursByDay),
     address: r.address ?? undefined,
     logoUrl: publicUrl(r.logoKey),
     facebook: social.facebook || undefined,
@@ -65,6 +68,7 @@ const selection = {
   phone: companies.phone,
   website: companies.website,
   hours: companies.hours,
+  hoursByDay: companies.hoursByDay,
   address: companies.addressLine,
   socialLinks: companies.socialLinks,
   logoKey: media.r2Key,

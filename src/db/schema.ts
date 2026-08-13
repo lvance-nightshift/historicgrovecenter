@@ -120,6 +120,9 @@ export const companies = pgTable("companies", {
   category: varchar("category", { length: 64 }),
   // { facebook, instagram, … } — public social links shown on the merchant page.
   socialLinks: jsonb("social_links"),
+  // Structured weekly hours: { mon: {closed} | {open,close}, … }. See
+  // src/lib/hours.ts. `hours` (above) stays as an optional freeform note.
+  hoursByDay: jsonb("hours_by_day"),
   published: boolean("published").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

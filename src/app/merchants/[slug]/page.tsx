@@ -4,6 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import { getMerchantBySlug } from "@/lib/merchants-db";
+import { DAYS, formatDay, hasWeekHours } from "@/lib/hours";
 
 export const dynamic = "force-dynamic";
 
@@ -69,14 +70,28 @@ export default async function MerchantPage({ params }: Params) {
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            {m.hours && (
+            {(hasWeekHours(m.hoursByDay ?? {}) || m.hours) && (
               <div className="rounded-xl border border-border bg-surface p-5">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
                   Hours
                 </h2>
-                <p className="mt-1 whitespace-pre-line text-sm font-medium text-foreground">
-                  {m.hours}
-                </p>
+                {hasWeekHours(m.hoursByDay ?? {}) && (
+                  <dl className="mt-2 space-y-1 text-sm">
+                    {DAYS.map(({ key, short }) => (
+                      <div key={key} className="flex justify-between gap-4">
+                        <dt className="text-muted">{short}</dt>
+                        <dd className="font-medium text-foreground">
+                          {formatDay(m.hoursByDay?.[key])}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {m.hours && (
+                  <p className="mt-2 whitespace-pre-line text-sm text-muted">
+                    {m.hours}
+                  </p>
+                )}
               </div>
             )}
 

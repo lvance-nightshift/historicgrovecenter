@@ -63,16 +63,7 @@ export default async function AccountPage() {
               {c.tagline && (
                 <span className="mt-0.5 text-sm text-muted">{c.tagline}</span>
               )}
-              <div className="mt-4 flex items-center justify-between">
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    c.published
-                      ? "bg-grove/10 text-grove"
-                      : "bg-brass/20 text-brick-dark"
-                  }`}
-                >
-                  {c.published ? "Live" : "Pending review"}
-                </span>
+              <div className="mt-4 flex items-center justify-end">
                 <span className="text-sm font-medium text-grove">Edit listing →</span>
               </div>
             </Link>

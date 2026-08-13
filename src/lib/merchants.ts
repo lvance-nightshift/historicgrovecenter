@@ -22,6 +22,8 @@ export const CATEGORIES: MerchantCategory[] = [
   "Arts & Culture",
 ];
 
+import type { WeekHours } from "./hours";
+
 export type Merchant = {
   slug: string;
   name: string;
@@ -30,7 +32,8 @@ export type Merchant = {
   description?: string;
   phone?: string;
   website?: string;
-  hours?: string;
+  hours?: string; // freeform note (holidays, "by appointment", …)
+  hoursByDay?: WeekHours; // structured weekly hours
   address?: string;
   logoUrl?: string;
   facebook?: string;

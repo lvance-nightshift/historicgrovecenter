@@ -12,6 +12,7 @@ import { asc, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companies } from "@/db/schema";
 import { canManageCompany, type Actor } from "@/lib/auth/authorize";
+import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
 
 export type ManagedCompany = {
   id: number;
@@ -32,6 +33,7 @@ export type EditableCompany = {
   hours: string | null;
   phone: string | null;
   website: string | null;
+  hoursByDay: WeekHours;
   address: string | null;
   facebook: string | null;
   instagram: string | null;
@@ -91,6 +93,7 @@ export async function getEditableCompany(
     hours: row.hours,
     phone: row.phone,
     website: row.website,
+    hoursByDay: normalizeWeekHours(row.hoursByDay),
     address: row.addressLine,
     facebook: social.facebook ?? null,
     instagram: social.instagram ?? null,

@@ -1,0 +1,1 @@
+ALTER TABLE "companies" ADD COLUMN "hours_by_day" jsonb;

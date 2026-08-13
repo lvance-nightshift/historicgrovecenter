@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { updateMyCompany } from "@/app/account/actions";
 import { CATEGORIES, type Merchant } from "@/lib/merchants";
 import MerchantCard from "@/components/MerchantCard";
+import HoursEditor from "@/components/account/HoursEditor";
+import type { WeekHours } from "@/lib/hours";
 import type { EditableCompany } from "@/lib/account";
 
 const input =
@@ -30,6 +32,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
     facebook: company.facebook ?? "",
     instagram: company.instagram ?? "",
   });
+  const [hoursByDay, setHoursByDay] = useState<WeekHours>(company.hoursByDay ?? {});
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setF((prev) => ({ ...prev, [k]: e.target.value }));
@@ -54,7 +57,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
     }
     startTransition(async () => {
       try {
-        await updateMyCompany({ companyId: company.id, ...f });
+        await updateMyCompany({ companyId: company.id, ...f, hoursByDay });
         setSaved(true);
         router.refresh();
       } catch {
@@ -74,14 +77,30 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
         <div className="grid gap-4 sm:grid-cols-2">
           <label className={label}>
             <span className={labelText}>Category</span>
-            <select value={f.category} onChange={set("category")} className={input}>
-              <option value="">— choose —</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={f.category}
+                onChange={set("category")}
+                className={`${input} appearance-none pr-9`}
+              >
+                <option value="">— choose —</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <svg
+                aria-hidden
+                viewBox="0 0 20 20"
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
+              </svg>
+            </div>
           </label>
           <label className={label}>
             <span className={labelText}>Tagline</span>
@@ -99,12 +118,27 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
           <textarea value={f.description} onChange={set("description")} rows={5} className={input} />
         </label>
 
+        <div className={label}>
+          <span className={labelText}>Weekly hours</span>
+          <div className="mt-1">
+            <HoursEditor
+              value={hoursByDay}
+              onChange={(next) => {
+                setHoursByDay(next);
+                setSaved(false);
+              }}
+            />
+          </div>
+        </div>
+
         <label className={label}>
-          <span className={labelText}>Hours</span>
+          <span className={labelText}>
+            Hours note <span className="text-muted">(optional)</span>
+          </span>
           <input
             value={f.hours}
             onChange={set("hours")}
-            placeholder="e.g. Mon–Sat 9am–5pm"
+            placeholder="e.g. Holiday hours vary · By appointment"
             className={input}
           />
         </label>

@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companies } from "@/db/schema";
 import { getActor, canManageCompany } from "@/lib/auth/authorize";
+import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
 
 export type MerchantListingInput = {
   companyId: number;
@@ -20,6 +21,7 @@ export type MerchantListingInput = {
   tagline?: string;
   description?: string;
   hours?: string;
+  hoursByDay?: WeekHours;
   phone?: string;
   website?: string;
   address?: string;
@@ -67,6 +69,7 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
       website: url(input.website),
       addressLine: clean(input.address),
       socialLinks,
+      hoursByDay: normalizeWeekHours(input.hoursByDay),
       updatedAt: new Date(),
     })
     .where(eq(companies.id, input.companyId));
