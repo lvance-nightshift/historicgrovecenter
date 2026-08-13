@@ -4,7 +4,7 @@
  * header can show an Admin link only to admins. Never throws for anonymous.
  */
 import { NextResponse } from "next/server";
-import { getActor, isAdmin } from "@/lib/auth/authorize";
+import { getActor, isAdmin, isMerchantOfAny } from "@/lib/auth/authorize";
 
 export const runtime = "nodejs";
 
@@ -14,9 +14,15 @@ export async function GET() {
     return NextResponse.json({
       signedIn: Boolean(actor),
       isAdmin: actor ? isAdmin(actor) : false,
+      isMerchant: actor ? isMerchantOfAny(actor) : false,
       name: actor?.user.name ?? null,
     });
   } catch {
-    return NextResponse.json({ signedIn: false, isAdmin: false, name: null });
+    return NextResponse.json({
+      signedIn: false,
+      isAdmin: false,
+      isMerchant: false,
+      name: null,
+    });
   }
 }

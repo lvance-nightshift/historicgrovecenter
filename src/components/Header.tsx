@@ -10,14 +10,17 @@ export default function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMerchant, setIsMerchant] = useState(false);
 
-  // Show the Admin link only to signed-in admins (role from role_assignments).
+  // Show Admin / My Business links based on the viewer's roles.
   useEffect(() => {
     let active = true;
     fetch("/api/me")
       .then((r) => r.json())
       .then((d) => {
-        if (active) setIsAdmin(Boolean(d.isAdmin));
+        if (!active) return;
+        setIsAdmin(Boolean(d.isAdmin));
+        setIsMerchant(Boolean(d.isMerchant));
       })
       .catch(() => {});
     return () => {
@@ -68,6 +71,14 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          {isMerchant && (
+            <Link
+              href="/account"
+              className="ml-1 rounded-full border border-grove/40 px-4 py-2 text-sm font-semibold text-grove transition-colors hover:bg-grove/10"
+            >
+              My Business
+            </Link>
+          )}
           {isAdmin && (
             <Link
               href="/admin"
@@ -113,6 +124,15 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          {isMerchant && (
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="mt-1 block rounded-md border border-grove/40 px-3 py-2.5 text-base font-semibold text-grove"
+            >
+              My Business
+            </Link>
+          )}
           {isAdmin && (
             <Link
               href="/admin"
