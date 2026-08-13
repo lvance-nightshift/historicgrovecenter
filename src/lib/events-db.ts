@@ -68,6 +68,49 @@ export async function getCompanyEvents(companyId: number): Promise<MerchantEvent
   }
 }
 
+export type AdminEvent = {
+  id: number;
+  title: string;
+  type: string;
+  ownerCompanyId: number | null;
+  ownerName: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  location: string | null;
+  description: string | null;
+  published: boolean;
+};
+
+/** Every event (association + business) for the admin events manager. */
+export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
+  try {
+    const rows = await getDb()
+      .select({
+        id: events.id,
+        title: events.title,
+        type: events.type,
+        ownerCompanyId: events.ownerCompanyId,
+        ownerName: companies.name,
+        startAt: events.startAt,
+        endAt: events.endAt,
+        location: events.location,
+        description: events.description,
+        published: events.published,
+      })
+      .from(events)
+      .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
+      .orderBy(asc(events.startAt));
+    return rows.map((r) => ({
+      ...r,
+      startAt: r.startAt ? r.startAt.toISOString() : null,
+      endAt: r.endAt ? r.endAt.toISOString() : null,
+    }));
+  } catch (err) {
+    console.error("getAllEventsAdmin failed", err);
+    return [];
+  }
+}
+
 /** Published, not-past events for the merchant whose slug is given (public page). */
 export async function getPublicEventsForCompanySlug(
   slug: string,

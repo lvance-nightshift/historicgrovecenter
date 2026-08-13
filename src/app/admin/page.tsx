@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
     { href: "/admin/companies", label: "Companies", n: companiesN, hint: "Merchants, vendors, bands" },
     { href: "/admin/media", label: "Media", n: mediaN, hint: "Images & documents" },
     { href: "/admin/site", label: "Site", hint: "Hero image, colors & themes" },
-    { href: "/admin", label: "Events", n: eventsN, hint: "Coming soon" },
+    { href: "/admin/events", label: "Events", n: eventsN, hint: "Association & business events" },
     { href: "/admin", label: "Inbox", n: inboxN, hint: "Contact submissions" },
   ];
 
