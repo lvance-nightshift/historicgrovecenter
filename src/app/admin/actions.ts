@@ -220,6 +220,33 @@ export async function removeMembership(
 
 /* ---------------- Companies ---------------- */
 
+function slugifyName(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120);
+}
+
+/** A slug unique across companies (base from provided slug or the name). */
+async function uniqueCompanySlug(name: string, provided?: string | null): Promise<string> {
+  const db = getDb();
+  const base = slugifyName(provided?.trim() || name) || "business";
+  let slug = base;
+  let n = 1;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const [hit] = await db
+      .select({ id: companies.id })
+      .from(companies)
+      .where(eq(companies.slug, slug));
+    if (!hit) return slug;
+    n += 1;
+    slug = `${base}-${n}`;
+  }
+}
+
 export async function createCompany(input: {
   name: string;
   slug?: string;
@@ -232,7 +259,7 @@ export async function createCompany(input: {
     .insert(companies)
     .values({
       name: input.name.trim(),
-      slug: clean(input.slug),
+      slug: await uniqueCompanySlug(input.name, input.slug),
       tagline: clean(input.tagline),
     })
     .returning({ id: companies.id });
