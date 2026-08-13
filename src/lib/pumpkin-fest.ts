@@ -20,8 +20,9 @@ export const PUMPKIN_FEST = {
   boothFeeLabel: "$45 per vendor space",
   boothFeeCents: 4500,
   spots: 30,
-  spotsLabel: "30 spaces available — limited!",
+  spotsLabel: "30 artisan & craft vendor spaces — limited!",
   organizer: "Friends of the Grove Theater / Grove Center Merchants",
+  sponsors: "Oklo — presenting sponsor",
   benefiting:
     "SARG Inc. (Shelter Animals Rescue Group), the Historic Grove Theater & the local arts",
   contact: {
@@ -37,8 +38,9 @@ export const PUMPKIN_FEST = {
   benefitBlurb:
     "The Pumpkin Fest benefits SARG Inc. (Shelter Animals Rescue Group), the Historic Grove Theater, and local arts. Join us in making it the best one yet!",
   highlights: [
-    "30 vendor spaces available — first come, first served",
-    "$45 per vendor space for local artisans",
+    "30 artisan & craft vendor spaces — first come, first served",
+    "$45 per vendor space",
+    "Food vendors welcome (Oak Ridge permit + insurance required)",
     "Live music, pumpkins, petting zoo & pet costume contest",
     "High-foot-traffic community event in the heart of the Grove Center",
   ],

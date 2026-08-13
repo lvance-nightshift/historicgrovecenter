@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitVendorRegistration } from "@/app/actions/vendor-registration";
 import { initialVendorState } from "@/app/actions/vendor-state";
-import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -14,7 +13,7 @@ function Err({ msg }: { msg?: string }) {
   return <span className="mt-1 block text-xs text-brick-dark">{msg}</span>;
 }
 
-function SubmitButton() {
+function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -22,12 +21,13 @@ function SubmitButton() {
       disabled={pending}
       className="w-full rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending ? "Submitting…" : "Reserve my vendor space"}
+      {pending ? "Submitting…" : label}
     </button>
   );
 }
 
-export default function VendorRegistrationForm() {
+export default function VendorForm({ variant }: { variant: "craft" | "food" }) {
+  const isFood = variant === "food";
   const [state, formAction] = useActionState(
     submitVendorRegistration,
     initialVendorState,
@@ -46,8 +46,12 @@ export default function VendorRegistrationForm() {
 
   return (
     <form className="space-y-4" action={formAction}>
+      <input type="hidden" name="vendorType" value={variant} />
+
       <label className="block text-sm">
-        <span className="font-medium text-foreground">Business / booth name</span>
+        <span className="font-medium text-foreground">
+          {isFood ? "Food business / truck name" : "Business / booth name"}
+        </span>
         <input type="text" name="businessName" required className={inputClass} />
         <Err msg={state.fieldErrors?.businessName} />
       </label>
@@ -72,19 +76,25 @@ export default function VendorRegistrationForm() {
       </label>
 
       <label className="block text-sm">
-        <span className="font-medium text-foreground">What will you be selling?</span>
+        <span className="font-medium text-foreground">
+          {isFood ? "What will you be serving?" : "What will you be selling?"}
+        </span>
         <textarea
           name="products"
           rows={3}
           required
-          placeholder="e.g. handmade candles, fall wreaths, kettle corn…"
+          placeholder={
+            isFood
+              ? "e.g. wood-fired pizza, kettle corn, tacos, lemonade…"
+              : "e.g. handmade candles, fall wreaths, jewelry…"
+          }
           className={inputClass}
         />
         <Err msg={state.fieldErrors?.products} />
       </label>
 
       <label className="block text-sm">
-        <span className="font-medium text-foreground">Vendor spaces</span>
+        <span className="font-medium text-foreground">Spaces</span>
         <select name="spaces" defaultValue="1" className={inputClass}>
           {[1, 2, 3, 4, 5].map((n) => (
             <option key={n} value={n}>
@@ -93,7 +103,7 @@ export default function VendorRegistrationForm() {
           ))}
         </select>
         <span className="mt-1 block text-xs text-muted">
-          {PUMPKIN_FEST.boothFeeLabel}. Spaces are limited (30 total).
+          $45 per space. Spaces are limited (30 total).
         </span>
       </label>
 
@@ -109,7 +119,33 @@ export default function VendorRegistrationForm() {
         />
       </label>
 
-      {/* Honeypot: hidden from people, catnip for bots. */}
+      {isFood && (
+        <div className="space-y-2 rounded-lg border border-brass/40 bg-brass/5 p-4">
+          <p className="text-sm font-medium text-foreground">
+            Oak Ridge requires food vendors to be permitted &amp; insured.
+          </p>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="permit" className="mt-1" />
+            <span className="text-foreground/80">
+              I have (or will provide) a current Oak Ridge food-service permit.
+            </span>
+          </label>
+          <Err msg={state.fieldErrors?.permit} />
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="insurance" className="mt-1" />
+            <span className="text-foreground/80">
+              I carry liability insurance and can provide a certificate.
+            </span>
+          </label>
+          <Err msg={state.fieldErrors?.insurance} />
+          <p className="text-xs text-muted">
+            We&apos;ll ask you to email your permit and certificate of insurance
+            after you register.
+          </p>
+        </div>
+      )}
+
+      {/* Honeypot */}
       <input
         type="text"
         name="company_website"
@@ -130,15 +166,12 @@ export default function VendorRegistrationForm() {
       <Err msg={state.fieldErrors?.agree} />
 
       {state.message && !state.ok && (
-        <p
-          role="status"
-          className="rounded-lg bg-brick/10 px-4 py-3 text-sm text-brick-dark"
-        >
+        <p role="status" className="rounded-lg bg-brick/10 px-4 py-3 text-sm text-brick-dark">
           {state.message}
         </p>
       )}
 
-      <SubmitButton />
+      <SubmitButton label={isFood ? "Register as a food vendor" : "Reserve my vendor space"} />
     </form>
   );
 }

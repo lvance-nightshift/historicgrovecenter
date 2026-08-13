@@ -1,9 +1,9 @@
 /*
- * Vendor-registration form state + initial value.
+ * Vendor-registration form state + initial value (shared by the craft/artisan
+ * and food-vendor forms).
  *
  * Kept OUT of vendor-registration.ts because that file is `"use server"`,
- * which may only export async functions — exporting this object from there is a
- * build error and breaks the client's useActionState.
+ * which may only export async functions.
  */
 
 export type VendorField =
@@ -12,7 +12,9 @@ export type VendorField =
   | "email"
   | "phone"
   | "products"
-  | "agree";
+  | "agree"
+  | "permit"
+  | "insurance";
 
 export type VendorState = {
   ok: boolean;

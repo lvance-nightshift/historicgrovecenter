@@ -104,6 +104,7 @@ export type VendorRegistration = {
   spaces: number;
   feeLabel: string; // e.g. "$90 (2 × $45)"
   notes?: string;
+  isFood?: boolean;
 };
 
 /**
@@ -127,20 +128,23 @@ export async function sendVendorRegistrationEmails(
     from: `Grove Center Website <${from}>`,
     to,
     replyTo: `${reg.contactName} <${reg.email}>`,
-    subject: `New ${eventName} vendor registration — ${reg.businessName}`,
+    subject: `New ${eventName} ${reg.isFood ? "FOOD " : ""}vendor registration — ${reg.businessName}`,
     text: [
-      `New vendor registration for ${eventName}:`,
+      `New ${reg.isFood ? "food " : ""}vendor registration for ${eventName}:`,
       "",
       `Business:  ${reg.businessName}`,
       `Contact:   ${reg.contactName}`,
       `Email:     ${reg.email}`,
       `Phone:     ${reg.phone}`,
-      `Sells:     ${reg.products}`,
+      `${reg.isFood ? "Serves:   " : "Sells:    "}${reg.products}`,
       `Spaces:    ${reg.spaces}`,
       `Booth fee: ${reg.feeLabel}`,
+      reg.isFood ? "Attested:  has Oak Ridge food permit + liability insurance" : null,
       reg.notes ? `Notes:     ${reg.notes}` : null,
       "",
-      "Follow up to confirm the booth space and collect payment.",
+      reg.isFood
+        ? "Follow up to confirm the space, collect payment, and collect the Oak Ridge food permit + certificate of insurance."
+        : "Follow up to confirm the booth space and collect payment.",
     ]
       .filter((l) => l !== null)
       .join("\n"),
@@ -159,7 +163,13 @@ export async function sendVendorRegistrationEmails(
       `Spaces requested: ${reg.spaces}`,
       `Booth fee:        ${reg.feeLabel}`,
       "",
-      "This is a request to reserve a space — it isn't confirmed yet. Spaces are limited (30 total) and assigned first come, first served. Someone from the Grove Center will be in touch to confirm your booth and arrange the booth fee.",
+      "This is a request to reserve a space — it isn't confirmed yet. Spaces are limited and assigned first come, first served. Someone from the Grove Center will be in touch to confirm your space and arrange the booth fee.",
+      ...(reg.isFood
+        ? [
+            "",
+            "Food vendors: you'll need a current Oak Ridge food permit and a certificate of liability insurance. Please reply to this email with both attached, or bring them when we follow up.",
+          ]
+        : []),
       "",
       "Event day: vendor setup begins at 7 a.m., the street closes at 9 a.m., and the festival runs 10 a.m.–4 p.m.",
       "",

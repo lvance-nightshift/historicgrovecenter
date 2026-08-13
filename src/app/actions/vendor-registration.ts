@@ -1,13 +1,12 @@
 "use server";
 
 /*
- * Fall Pumpkin Fest vendor-registration action.
- *
- * Stores the registration as an `event_participations` row (type=vendor,
- * status=pending) on the seeded Pumpkin Fest event, best-effort links/creates
+ * Fall Pumpkin Fest vendor-registration action — handles BOTH the
+ * craft/artisan form and the food-vendor form (distinguished by the hidden
+ * `vendorType` field). Stores the registration as an `event_participations`
+ * row (type=vendor | food_vendor, status=pending), best-effort links/creates
  * the contact person, and emails the organizer + the vendor. Degrades
- * gracefully while DB/email creds are being wired up — mirrors the
- * contact-form action.
+ * gracefully while DB/email creds are being wired up.
  */
 
 import { and, eq } from "drizzle-orm";
@@ -60,6 +59,8 @@ export async function submitVendorRegistration(
     return { ok: true, message: "Thanks! Your registration has been received." };
   }
 
+  const isFood = String(formData.get("vendorType") ?? "") === "food";
+
   const businessName = String(formData.get("businessName") ?? "").trim();
   const contactName = String(formData.get("contactName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
@@ -67,18 +68,23 @@ export async function submitVendorRegistration(
   const products = String(formData.get("products") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const agree = formData.get("agree") != null;
+  const hasPermit = formData.get("permit") != null;
+  const hasInsurance = formData.get("insurance") != null;
   let spaces = Number(formData.get("spaces") ?? "1");
   if (!Number.isFinite(spaces) || spaces < 1) spaces = 1;
   if (spaces > 5) spaces = 5;
 
+  const productsLabel = isFood ? "Tell us what you'll be serving." : "Tell us what you'll be selling.";
   const fieldErrors: VendorState["fieldErrors"] = {};
   if (!businessName) fieldErrors.businessName = "Please enter your business or booth name.";
   if (!contactName) fieldErrors.contactName = "Please enter a contact name.";
   if (!email) fieldErrors.email = "Please enter your email.";
   else if (!EMAIL_RE.test(email)) fieldErrors.email = "Enter a valid email.";
   if (!phone) fieldErrors.phone = "Please enter a phone number.";
-  if (!products) fieldErrors.products = "Tell us what you'll be selling.";
+  if (!products) fieldErrors.products = productsLabel;
   if (!agree) fieldErrors.agree = "Please acknowledge the booth fee and terms.";
+  if (isFood && !hasPermit) fieldErrors.permit = "Food vendors need a current Oak Ridge permit.";
+  if (isFood && !hasInsurance) fieldErrors.insurance = "Food vendors need liability insurance.";
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, message: "Please fix the highlighted fields.", fieldErrors };
   }
@@ -86,7 +92,7 @@ export async function submitVendorRegistration(
   const feeCents = spaces * PUMPKIN_FEST.boothFeeCents;
   const feeLabel =
     spaces === 1
-      ? PUMPKIN_FEST.boothFeeLabel.replace(" per vendor space", "")
+      ? dollars(PUMPKIN_FEST.boothFeeCents)
       : `${dollars(feeCents)} (${spaces} × ${dollars(PUMPKIN_FEST.boothFeeCents)})`;
 
   // Nothing wired up yet — don't pretend we saved it.
@@ -109,8 +115,6 @@ export async function submitVendorRegistration(
         .where(eq(events.slug, PUMPKIN_FEST.slug));
       if (ev) {
         const personId = await upsertPerson(contactName, email, phone);
-
-        // Guard against obvious duplicate submissions (same event + email + business).
         const [dupe] = personId
           ? await db
               .select({ id: eventParticipations.id })
@@ -129,11 +133,12 @@ export async function submitVendorRegistration(
             .values({
               eventId: ev.id,
               personId,
-              type: "vendor",
+              type: isFood ? "food_vendor" : "vendor",
               status: "pending",
               feeAmountCents: feeCents,
               paymentStatus: "unpaid",
               applicationData: {
+                vendorType: isFood ? "food" : "craft",
                 businessName,
                 contactName,
                 email,
@@ -142,6 +147,7 @@ export async function submitVendorRegistration(
                 spaces,
                 notes: notes || null,
                 agreedToFee: true,
+                ...(isFood ? { hasPermit, hasInsurance } : {}),
                 source: "pumpkin-fest-web-form",
               },
               notes: notes || null,
@@ -152,10 +158,7 @@ export async function submitVendorRegistration(
           participationId = dupe.id;
         }
       } else {
-        console.error(
-          "vendor-registration: event not found for slug",
-          PUMPKIN_FEST.slug,
-        );
+        console.error("vendor-registration: event not found for slug", PUMPKIN_FEST.slug);
       }
     } catch (err) {
       console.error("vendor-registration: failed to store registration", err);
@@ -166,12 +169,21 @@ export async function submitVendorRegistration(
   if (isEmailConfigured()) {
     try {
       await sendVendorRegistrationEmails(
-        { businessName, contactName, email, phone, products, spaces, feeLabel, notes: notes || undefined },
+        {
+          businessName,
+          contactName,
+          email,
+          phone,
+          products,
+          spaces,
+          feeLabel,
+          notes: notes || undefined,
+          isFood,
+        },
         PUMPKIN_FEST.title,
       );
     } catch (err) {
       console.error("vendor-registration: failed to send email", err);
-      // If we also couldn't store it, tell the vendor to try again.
       if (participationId === null) {
         return {
           ok: false,
@@ -184,7 +196,8 @@ export async function submitVendorRegistration(
 
   return {
     ok: true,
-    message:
-      "Thanks! Your vendor registration has been received. Spaces are limited and first come, first served — someone from the Grove Center will follow up to confirm your booth and booth fee. Check your email for a confirmation.",
+    message: isFood
+      ? "Thanks! Your food-vendor registration has been received. Someone from the Grove Center will follow up to confirm your space and collect your Oak Ridge permit and certificate of insurance. Check your email for a confirmation."
+      : "Thanks! Your vendor registration has been received. Spaces are limited and first come, first served — someone from the Grove Center will follow up to confirm your booth and booth fee. Check your email for a confirmation.",
   };
 }

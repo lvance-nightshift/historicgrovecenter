@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { PUMPKIN_FEST as PF } from "@/lib/pumpkin-fest";
-import VendorRegistrationForm from "@/components/VendorRegistrationForm";
+import VendorRegistrationTabs from "@/components/VendorRegistrationTabs";
 
 export const metadata: Metadata = {
   title: "Fall Pumpkin Fest — Vendor Registration",
   description:
-    "Reserve a vendor space at the Historic Grove Center Fall Pumpkin Fest, Saturday October 17, 2026 in Oak Ridge, TN. Music, pumpkins, a petting zoo, and a pet costume contest benefiting SARG and the Historic Grove Theater.",
+    "Reserve a vendor space at the Historic Grove Center Fall Pumpkin Fest, Saturday October 17, 2026 in Oak Ridge, TN. Artisan/craft and food vendors welcome. Music, pumpkins, a petting zoo, and a pet costume contest benefiting SARG and the Historic Grove Theater.",
 };
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -59,7 +59,7 @@ export default function PumpkinFestPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1fr_26rem]">
+        <div className="grid gap-10 lg:grid-cols-[1fr_24rem]">
           {/* Left: about + details */}
           <section>
             <h2 className="font-serif text-2xl font-semibold text-grove">
@@ -76,8 +76,11 @@ export default function PumpkinFestPage() {
                 </li>
               ))}
             </ul>
+          </section>
 
-            <div className="mt-8 rounded-xl border border-border bg-surface p-5">
+          {/* Right: event details */}
+          <aside>
+            <div className="rounded-xl border border-border bg-surface p-5">
               <h3 className="font-serif text-lg font-semibold text-grove">
                 Event details
               </h3>
@@ -91,6 +94,7 @@ export default function PumpkinFestPage() {
                 <DetailRow label="Vendor spots">{PF.spotsLabel}</DetailRow>
                 <DetailRow label="Booth fee">{PF.boothFeeLabel}</DetailRow>
                 <DetailRow label="Organizer">{PF.organizer}</DetailRow>
+                <DetailRow label="Sponsor">{PF.sponsors}</DetailRow>
                 <DetailRow label="Benefiting">{PF.benefiting}</DetailRow>
                 <DetailRow label="Contact">
                   {PF.contact.name}
@@ -105,24 +109,22 @@ export default function PumpkinFestPage() {
                 </DetailRow>
               </dl>
             </div>
-          </section>
-
-          {/* Right: registration form */}
-          <aside className="lg:sticky lg:top-8 lg:self-start">
-            <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-              <h2 className="font-serif text-xl font-semibold text-grove">
-                Vendor registration
-              </h2>
-              <p className="mt-1 text-sm text-muted">
-                Reserve your space — spots are limited and first come, first
-                served.
-              </p>
-              <div className="mt-5">
-                <VendorRegistrationForm />
-              </div>
-            </div>
           </aside>
         </div>
+
+        {/* Registration */}
+        <section className="mx-auto mt-14 max-w-2xl rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+          <h2 className="font-serif text-2xl font-semibold text-grove">
+            Vendor registration
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Choose your vendor type — spaces are limited and first come, first
+            served.
+          </p>
+          <div className="mt-6">
+            <VendorRegistrationTabs />
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted">
