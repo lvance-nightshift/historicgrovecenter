@@ -36,6 +36,7 @@ export type Merchant = {
   hoursByDay?: WeekHours; // structured weekly hours
   address?: string;
   logoUrl?: string;
+  gallery?: string[]; // photo URLs (detail page)
   facebook?: string;
   instagram?: string;
 };

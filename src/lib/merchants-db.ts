@@ -14,6 +14,7 @@ import {
   companyKinds,
   companyKindAssignments,
   media,
+  mediaAttachments,
 } from "@/db/schema";
 import type { Merchant } from "./merchants";
 import { normalizeWeekHours } from "./hours";
@@ -101,16 +102,36 @@ export async function getMerchants(): Promise<Merchant[]> {
   }
 }
 
-/** A single published merchant by slug, or null. */
+/** A single published merchant by slug (with photo gallery), or null. */
 export async function getMerchantBySlug(slug: string): Promise<Merchant | null> {
   try {
-    const [row] = await getDb()
-      .select(selection)
+    const db = getDb();
+    const [row] = await db
+      .select({ ...selection, id: companies.id })
       .from(companies)
       .leftJoin(media, eq(media.id, companies.logoMediaId))
       .where(and(eq(companies.slug, slug), eq(companies.published, true)))
       .limit(1);
-    return row ? toMerchant(row) : null;
+    if (!row) return null;
+    const merchant = toMerchant(row);
+    if (!merchant) return null;
+
+    const galleryRows = await db
+      .select({ r2Key: media.r2Key })
+      .from(mediaAttachments)
+      .innerJoin(media, eq(media.id, mediaAttachments.mediaId))
+      .where(
+        and(
+          eq(mediaAttachments.targetType, "company"),
+          eq(mediaAttachments.targetId, row.id),
+          eq(mediaAttachments.purpose, "gallery"),
+        ),
+      )
+      .orderBy(asc(mediaAttachments.sortOrder), asc(mediaAttachments.id));
+    merchant.gallery = galleryRows
+      .map((g) => publicUrl(g.r2Key))
+      .filter((u): u is string => Boolean(u));
+    return merchant;
   } catch (err) {
     console.error("getMerchantBySlug failed", err);
     return null;

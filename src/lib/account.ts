@@ -8,11 +8,14 @@
  */
 
 import "server-only";
-import { asc, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { companies } from "@/db/schema";
+import { companies, media, mediaAttachments } from "@/db/schema";
 import { canManageCompany, type Actor } from "@/lib/auth/authorize";
+import { mediaUrl } from "@/lib/media";
 import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
+
+export type MediaRef = { id: number; url: string };
 
 export type ManagedCompany = {
   id: number;
@@ -37,8 +40,12 @@ export type EditableCompany = {
   address: string | null;
   facebook: string | null;
   instagram: string | null;
+  logo: MediaRef | null;
+  gallery: MediaRef[];
   published: boolean;
 };
+
+export const GALLERY_LIMIT = 3;
 
 /** Company ids the actor manages as a merchant (company-scoped role). */
 export function managedCompanyIds(actor: Actor): number[] {
@@ -76,13 +83,38 @@ export async function getEditableCompany(
   companyId: number,
 ): Promise<EditableCompany | null> {
   if (!canManageCompany(actor, companyId)) return null;
-  const [row] = await getDb()
+  const db = getDb();
+  const [row] = await db
     .select()
     .from(companies)
     .where(inArray(companies.id, [companyId]))
     .limit(1);
   if (!row) return null;
   const social = (row.socialLinks ?? {}) as Record<string, string | undefined>;
+
+  let logo: MediaRef | null = null;
+  if (row.logoMediaId) {
+    const [lm] = await db
+      .select({ id: media.id, r2Key: media.r2Key })
+      .from(media)
+      .where(eq(media.id, row.logoMediaId))
+      .limit(1);
+    if (lm) logo = { id: lm.id, url: mediaUrl(lm) };
+  }
+
+  const gal = await db
+    .select({ id: media.id, r2Key: media.r2Key })
+    .from(mediaAttachments)
+    .innerJoin(media, eq(media.id, mediaAttachments.mediaId))
+    .where(
+      and(
+        eq(mediaAttachments.targetType, "company"),
+        eq(mediaAttachments.targetId, companyId),
+        eq(mediaAttachments.purpose, "gallery"),
+      ),
+    )
+    .orderBy(asc(mediaAttachments.sortOrder), asc(mediaAttachments.id));
+
   return {
     id: row.id,
     slug: row.slug,
@@ -97,6 +129,8 @@ export async function getEditableCompany(
     address: row.addressLine,
     facebook: social.facebook ?? null,
     instagram: social.instagram ?? null,
+    logo,
+    gallery: gal.map((g) => ({ id: g.id, url: mediaUrl(g) })),
     published: row.published,
   };
 }

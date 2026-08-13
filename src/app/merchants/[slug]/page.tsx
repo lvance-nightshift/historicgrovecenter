@@ -67,6 +67,25 @@ export default async function MerchantPage({ params }: Params) {
             ) : (
               <p className="text-muted">More about {m.name} coming soon.</p>
             )}
+
+            {m.gallery && m.gallery.length > 0 && (
+              <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {m.gallery.map((url, i) => (
+                  <span
+                    key={i}
+                    className="relative aspect-square overflow-hidden rounded-lg border border-border"
+                  >
+                    <Image
+                      src={url}
+                      alt={`${m.name} photo ${i + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 220px"
+                      className="object-cover"
+                    />
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

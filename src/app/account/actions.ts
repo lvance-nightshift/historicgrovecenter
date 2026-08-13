@@ -8,12 +8,39 @@
  */
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { companies } from "@/db/schema";
+import { companies, mediaAttachments } from "@/db/schema";
 import sanitizeHtml from "sanitize-html";
 import { getActor, canManageCompany } from "@/lib/auth/authorize";
+import { GALLERY_LIMIT } from "@/lib/account";
 import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
+
+async function assertCanManage(companyId: number) {
+  const actor = await getActor();
+  if (!actor || !canManageCompany(actor, companyId)) throw new Error("Forbidden");
+}
+
+/** Revalidate every public/admin surface that shows a company. */
+async function revalidateCompany(companyId: number) {
+  revalidatePath("/");
+  revalidatePath("/merchants");
+  const [row] = await getDb()
+    .select({ slug: companies.slug })
+    .from(companies)
+    .where(eq(companies.id, companyId));
+  if (row?.slug) revalidatePath(`/merchants/${row.slug}`);
+  revalidatePath("/account");
+  revalidatePath(`/account/business/${companyId}`);
+}
+
+function galleryWhere(companyId: number) {
+  return and(
+    eq(mediaAttachments.targetType, "company"),
+    eq(mediaAttachments.targetId, companyId),
+    eq(mediaAttachments.purpose, "gallery"),
+  );
+}
 
 export type MerchantListingInput = {
   companyId: number;
@@ -101,4 +128,53 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
   if (row?.slug) revalidatePath(`/merchants/${row.slug}`);
   revalidatePath("/account");
   revalidatePath(`/account/business/${input.companyId}`);
+}
+
+/* ---------------- Logo & photo gallery ---------------- */
+
+export async function setMyCompanyLogo(
+  companyId: number,
+  mediaId: number | null,
+): Promise<void> {
+  await assertCanManage(companyId);
+  await getDb()
+    .update(companies)
+    .set({ logoMediaId: mediaId, updatedAt: new Date() })
+    .where(eq(companies.id, companyId));
+  await revalidateCompany(companyId);
+}
+
+export async function addMyCompanyPhoto(
+  companyId: number,
+  mediaId: number,
+): Promise<void> {
+  await assertCanManage(companyId);
+  const db = getDb();
+  const existing = await db
+    .select({ id: mediaAttachments.id, mediaId: mediaAttachments.mediaId })
+    .from(mediaAttachments)
+    .where(galleryWhere(companyId));
+  if (existing.some((e) => e.mediaId === mediaId)) return; // already attached
+  if (existing.length >= GALLERY_LIMIT) {
+    throw new Error(`Photo limit reached (${GALLERY_LIMIT}).`);
+  }
+  await db.insert(mediaAttachments).values({
+    mediaId,
+    targetType: "company",
+    targetId: companyId,
+    purpose: "gallery",
+    sortOrder: existing.length,
+  });
+  await revalidateCompany(companyId);
+}
+
+export async function removeMyCompanyPhoto(
+  companyId: number,
+  mediaId: number,
+): Promise<void> {
+  await assertCanManage(companyId);
+  await getDb()
+    .delete(mediaAttachments)
+    .where(and(galleryWhere(companyId), eq(mediaAttachments.mediaId, mediaId)));
+  await revalidateCompany(companyId);
 }

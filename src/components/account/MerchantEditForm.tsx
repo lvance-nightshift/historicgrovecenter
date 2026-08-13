@@ -18,6 +18,7 @@ const RichTextEditor = dynamic(
 import { CATEGORIES, type Merchant } from "@/lib/merchants";
 import MerchantCard from "@/components/MerchantCard";
 import HoursEditor from "@/components/account/HoursEditor";
+import MerchantMediaManager from "@/components/account/MerchantMediaManager";
 import type { WeekHours } from "@/lib/hours";
 import type { EditableCompany } from "@/lib/account";
 
@@ -81,6 +82,13 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
       <form onSubmit={submit} className="space-y-4">
+        {/* Logo + photos (upload/remove immediately — not part of Save) */}
+        <MerchantMediaManager
+          companyId={company.id}
+          initialLogo={company.logo}
+          initialGallery={company.gallery}
+        />
+
         <label className={label}>
           <span className={labelText}>Business name</span>
           <input value={f.name} onChange={set("name")} className={input} />
