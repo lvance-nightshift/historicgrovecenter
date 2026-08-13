@@ -10,7 +10,9 @@ import { useEffect, useState } from "react";
  * signed in (the header then shows My Business / Admin / Sign out).
  */
 export default function FooterSignIn() {
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  // Default to showing the link (the vast majority of visitors are signed
+  // out); hide it only once we confirm an active session.
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -19,15 +21,13 @@ export default function FooterSignIn() {
       .then((d) => {
         if (active) setSignedIn(Boolean(d.signedIn));
       })
-      .catch(() => {
-        if (active) setSignedIn(false);
-      });
+      .catch(() => {});
     return () => {
       active = false;
     };
   }, []);
 
-  if (signedIn !== false) return null; // null (loading) or true → render nothing
+  if (signedIn) return null;
 
   return (
     <Link
