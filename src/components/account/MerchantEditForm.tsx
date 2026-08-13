@@ -15,8 +15,7 @@ const RichTextEditor = dynamic(
     ),
   },
 );
-import { CATEGORIES, type Merchant } from "@/lib/merchants";
-import MerchantCard from "@/components/MerchantCard";
+import { CATEGORIES } from "@/lib/merchants";
 import HoursEditor from "@/components/account/HoursEditor";
 import MerchantMediaManager from "@/components/account/MerchantMediaManager";
 import type { WeekHours } from "@/lib/hours";
@@ -63,15 +62,6 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
     markDirty();
   };
 
-  const preview: Merchant = {
-    slug: company.slug ?? "preview",
-    name: f.name || "Your business name",
-    categories,
-    tagline: f.tagline || undefined,
-    description: f.description || undefined,
-    hours: f.hours || undefined,
-  };
-
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -92,7 +82,6 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
       <form onSubmit={submit} className="space-y-4">
         {/* Logo + photos (upload/remove immediately — not part of Save) */}
         <MerchantMediaManager
@@ -244,20 +233,5 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
                 : "Save changes"}
         </button>
       </form>
-
-      {/* Live preview */}
-      <aside className="lg:sticky lg:top-8 lg:self-start">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-          Live preview
-        </p>
-        <div className="pointer-events-none">
-          <MerchantCard merchant={preview} />
-        </div>
-        <p className="mt-2 text-xs text-muted">
-          This is how your card appears in the directory. Your full page shows
-          everything you enter here.
-        </p>
-      </aside>
-    </div>
   );
 }

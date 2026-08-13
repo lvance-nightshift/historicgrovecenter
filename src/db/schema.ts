@@ -75,6 +75,14 @@ export const companyKinds = pgTable("company_kinds", {
   isSystem: boolean("is_system").notNull().default(false),
 });
 
+/** Editable public directory categories (Dining, Shopping, …). Admin-managed. */
+export const merchantCategories = pgTable("merchant_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 80 }).notNull().unique(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /* ------------------------------------------------------------------ *
  * People & Companies — the two master lists.
  * ------------------------------------------------------------------ */
