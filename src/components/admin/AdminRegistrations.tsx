@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   updateRegistration,
   deleteRegistration,
+  setRegistrationVerification,
 } from "@/app/admin/registration-actions";
 import DocUpload from "@/components/DocUpload";
 import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
@@ -45,6 +46,8 @@ export default function AdminRegistrations({
       paymentStatus: g("paymentStatus"),
       permitDocKey: g("permitDocKey"),
       insuranceDocKey: g("insuranceDocKey"),
+      permitVerified: fd.get("permitVerified") != null,
+      insuranceVerified: fd.get("insuranceVerified") != null,
     };
     setError(null);
     startTransition(async () => {
@@ -67,6 +70,18 @@ export default function AdminRegistrations({
         setEditingId(null);
       } catch {
         setError("Could not save. Please try again.");
+      }
+    });
+  }
+
+  function verify(id: number, field: "permitVerified" | "insuranceVerified", value: boolean) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await setRegistrationVerification(id, field, value);
+        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [field]: value } : it)));
+      } catch {
+        setError("Could not update verification.");
       }
     });
   }
@@ -139,14 +154,36 @@ export default function AdminRegistrations({
                 )}
                 <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
                   {isFood && r.permitDocKey && (
-                    <a href={`/api/admin/doc?key=${encodeURIComponent(r.permitDocKey)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-grove hover:underline">
-                      View permit ↗
-                    </a>
+                    <span className="inline-flex items-center gap-2">
+                      <a href={`/api/admin/doc?key=${encodeURIComponent(r.permitDocKey)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-grove hover:underline">
+                        View permit ↗
+                      </a>
+                      {r.permitVerified ? (
+                        <button type="button" onClick={() => verify(r.id, "permitVerified", false)} disabled={busy} className="rounded-full bg-grove/10 px-2 py-0.5 text-xs font-medium text-grove hover:bg-grove/20" title="Click to un-verify">
+                          ✓ verified
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => verify(r.id, "permitVerified", true)} disabled={busy} className="rounded-full border border-border px-2 py-0.5 text-xs text-muted hover:border-grove/50">
+                          mark verified
+                        </button>
+                      )}
+                    </span>
                   )}
                   {isFood && r.insuranceDocKey && (
-                    <a href={`/api/admin/doc?key=${encodeURIComponent(r.insuranceDocKey)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-grove hover:underline">
-                      View insurance ↗
-                    </a>
+                    <span className="inline-flex items-center gap-2">
+                      <a href={`/api/admin/doc?key=${encodeURIComponent(r.insuranceDocKey)}`} target="_blank" rel="noopener noreferrer" className="font-medium text-grove hover:underline">
+                        View insurance ↗
+                      </a>
+                      {r.insuranceVerified ? (
+                        <button type="button" onClick={() => verify(r.id, "insuranceVerified", false)} disabled={busy} className="rounded-full bg-grove/10 px-2 py-0.5 text-xs font-medium text-grove hover:bg-grove/20" title="Click to un-verify">
+                          ✓ verified
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => verify(r.id, "insuranceVerified", true)} disabled={busy} className="rounded-full border border-border px-2 py-0.5 text-xs text-muted hover:border-grove/50">
+                          mark verified
+                        </button>
+                      )}
+                    </span>
                   )}
                   <button type="button" onClick={() => { setEditingId(r.id); setError(null); }} className="ml-auto font-medium text-grove hover:underline">
                     Edit
@@ -209,7 +246,15 @@ export default function AdminRegistrations({
                 {isFood && (
                   <div className="space-y-3 rounded-lg border border-brass/40 bg-brass/5 p-4">
                     <DocUpload name="permitDocKey" label="Oak Ridge food-service permit" initialKey={r.permitDocKey ?? ""} adminView />
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="permitVerified" defaultChecked={r.permitVerified} />
+                      <span className="text-foreground/80">I&apos;ve verified the food-service permit</span>
+                    </label>
                     <DocUpload name="insuranceDocKey" label="Certificate of liability insurance" initialKey={r.insuranceDocKey ?? ""} adminView />
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="insuranceVerified" defaultChecked={r.insuranceVerified} />
+                      <span className="text-foreground/80">I&apos;ve verified the certificate of insurance</span>
+                    </label>
                   </div>
                 )}
 

@@ -20,6 +20,8 @@ export type EventRegistration = {
   paymentStatus: string | null;
   permitDocKey: string | null;
   insuranceDocKey: string | null;
+  permitVerified: boolean;
+  insuranceVerified: boolean;
   createdAt: string;
   businessName: string;
   contactName: string;
@@ -42,6 +44,8 @@ export async function getEventRegistrations(eventId: number): Promise<EventRegis
         paymentStatus: eventParticipations.paymentStatus,
         permitDocKey: eventParticipations.permitDocKey,
         insuranceDocKey: eventParticipations.insuranceDocKey,
+        permitVerified: eventParticipations.permitVerified,
+        insuranceVerified: eventParticipations.insuranceVerified,
         createdAt: eventParticipations.createdAt,
         data: eventParticipations.applicationData,
         notes: eventParticipations.notes,
@@ -61,6 +65,8 @@ export async function getEventRegistrations(eventId: number): Promise<EventRegis
         paymentStatus: r.paymentStatus,
         permitDocKey: r.permitDocKey,
         insuranceDocKey: r.insuranceDocKey,
+        permitVerified: Boolean(r.permitVerified),
+        insuranceVerified: Boolean(r.insuranceVerified),
         createdAt: r.createdAt ? r.createdAt.toISOString() : "",
         businessName: str(d.businessName),
         contactName: str(d.contactName),

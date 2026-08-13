@@ -29,6 +29,8 @@ export type RegistrationEdit = {
   paymentStatus: string;
   permitDocKey?: string;
   insuranceDocKey?: string;
+  permitVerified?: boolean;
+  insuranceVerified?: boolean;
 };
 
 const clean = (v?: string) => {
@@ -62,6 +64,8 @@ export async function updateRegistration(
       feeAmountCents: spaces * PUMPKIN_FEST.boothFeeCents,
       permitDocKey: clean(input.permitDocKey),
       insuranceDocKey: clean(input.insuranceDocKey),
+      permitVerified: Boolean(input.permitVerified),
+      insuranceVerified: Boolean(input.insuranceVerified),
       notes: clean(input.notes),
       applicationData: {
         ...prev,
@@ -78,6 +82,25 @@ export async function updateRegistration(
     .where(eq(eventParticipations.id, id));
 
   revalidatePath(`/admin/events/${row.eventId}/registrations`);
+}
+
+/** Quick toggle: mark a permit / insurance as verified (or not). */
+export async function setRegistrationVerification(
+  id: number,
+  field: "permitVerified" | "insuranceVerified",
+  value: boolean,
+): Promise<void> {
+  await assertAdmin();
+  const db = getDb();
+  const [row] = await db
+    .select({ eventId: eventParticipations.eventId })
+    .from(eventParticipations)
+    .where(eq(eventParticipations.id, id));
+  await db
+    .update(eventParticipations)
+    .set({ [field]: value, updatedAt: new Date() })
+    .where(eq(eventParticipations.id, id));
+  if (row) revalidatePath(`/admin/events/${row.eventId}/registrations`);
 }
 
 export async function deleteRegistration(id: number): Promise<void> {
