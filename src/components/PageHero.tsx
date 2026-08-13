@@ -14,22 +14,32 @@ export default function PageHero({
   return (
     <section className="border-b border-border bg-grove text-background">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        {logoUrl && (
-          <span className="relative mb-5 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/10">
-            <Image src={logoUrl} alt="" fill sizes="80px" className="object-contain p-2" />
-          </span>
-        )}
-        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brass-light">
-          {eyebrow}
-        </p>
-        <h1 className="mt-3 font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-background/85">
-            {subtitle}
-          </p>
-        )}
+        <div
+          className={
+            logoUrl
+              ? "flex flex-col items-start gap-6 sm:flex-row sm:items-center"
+              : ""
+          }
+        >
+          {logoUrl && (
+            <span className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/10 sm:h-36 sm:w-36">
+              <Image src={logoUrl} alt="" fill sizes="144px" className="object-contain p-3" />
+            </span>
+          )}
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brass-light">
+              {eyebrow}
+            </p>
+            <h1 className="mt-3 font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-background/85">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
