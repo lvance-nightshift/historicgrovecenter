@@ -1,6 +1,6 @@
-import { formatEventDate, type GroveEvent } from "@/lib/events";
+import { formatEventDate, type PublicEvent } from "@/lib/events";
 
-export default function EventCard({ event }: { event: GroveEvent }) {
+export default function EventCard({ event }: { event: PublicEvent }) {
   const d = formatEventDate(event.date);
 
   return (
@@ -21,7 +21,7 @@ export default function EventCard({ event }: { event: GroveEvent }) {
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-brick/10 px-2.5 py-0.5 text-xs font-medium text-brick-dark">
-            {event.category}
+            {event.badge}
           </span>
           {(event.startTime || event.endTime) && (
             <span className="text-xs text-muted">
@@ -33,7 +33,9 @@ export default function EventCard({ event }: { event: GroveEvent }) {
         <h3 className="mt-2 font-serif text-lg font-semibold text-grove">
           {event.title}
         </h3>
-        <p className="mt-1 text-sm text-muted">{event.summary}</p>
+        {event.summary && (
+          <p className="mt-1 text-sm text-muted">{event.summary}</p>
+        )}
         <p className="mt-2 text-xs font-medium text-foreground/70">
           📍 {event.location}
         </p>

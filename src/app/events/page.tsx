@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import EventCard from "@/components/EventCard";
 import PageHero from "@/components/PageHero";
-import { pastEvents, upcomingEvents } from "@/lib/events";
+import { getPublicEvents } from "@/lib/events-db";
 
 export const metadata: Metadata = {
   title: "Events",
@@ -9,9 +9,10 @@ export const metadata: Metadata = {
     "Night markets, film nights, seasonal festivals, and history walks at Historic Grove Center in Oak Ridge, Tennessee.",
 };
 
-export default function EventsPage() {
-  const upcoming = upcomingEvents();
-  const past = pastEvents();
+export const dynamic = "force-dynamic";
+
+export default async function EventsPage() {
+  const { upcoming, past } = await getPublicEvents();
 
   return (
     <>

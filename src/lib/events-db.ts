@@ -7,9 +7,72 @@
  */
 
 import "server-only";
-import { and, asc, eq, gte, isNull, or } from "drizzle-orm";
+import { and, asc, eq, gte, isNotNull, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companies, events } from "@/db/schema";
+import type { PublicEvent } from "@/lib/events";
+
+const etDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/New_York",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const etTime = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+/** Published, dated events for the public calendar, split upcoming/past. */
+export async function getPublicEvents(): Promise<{
+  upcoming: PublicEvent[];
+  past: PublicEvent[];
+}> {
+  try {
+    const rows = await getDb()
+      .select({
+        slug: events.slug,
+        title: events.title,
+        type: events.type,
+        startAt: events.startAt,
+        endAt: events.endAt,
+        location: events.location,
+        description: events.description,
+        ownerName: companies.name,
+      })
+      .from(events)
+      .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
+      .where(and(eq(events.published, true), isNotNull(events.startAt)))
+      .orderBy(asc(events.startAt));
+
+    const today = etDate.format(new Date());
+    const upcoming: PublicEvent[] = [];
+    const past: PublicEvent[] = [];
+    for (const r of rows) {
+      if (!r.startAt) continue;
+      const date = etDate.format(r.startAt);
+      const desc = (r.description ?? "").trim();
+      const ev: PublicEvent = {
+        slug: r.slug,
+        title: r.title,
+        date,
+        startTime: etTime.format(r.startAt),
+        endTime: r.endAt ? etTime.format(r.endAt) : undefined,
+        location: r.location ?? "Historic Grove Center",
+        badge: r.type === "business" ? r.ownerName ?? "Merchant event" : "Grove Center",
+        summary: desc ? (desc.length > 140 ? `${desc.slice(0, 137)}…` : desc) : "",
+      };
+      if (date >= today) upcoming.push(ev);
+      else past.push(ev);
+    }
+    past.reverse(); // most recent first
+    return { upcoming, past };
+  } catch (err) {
+    console.error("getPublicEvents failed", err);
+    return { upcoming: [], past: [] };
+  }
+}
 
 export type MerchantEvent = {
   id: number;
