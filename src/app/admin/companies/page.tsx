@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
@@ -57,8 +58,12 @@ export default async function CompaniesPage() {
               </thead>
               <tbody>
                 {rows.map((c) => (
-                  <tr key={c.id} className="border-b border-border last:border-0">
-                    <td className="px-4 py-2.5 font-medium text-foreground">{c.name}</td>
+                  <tr key={c.id} className="border-b border-border last:border-0 hover:bg-grove/5">
+                    <td className="px-4 py-2.5 font-medium">
+                      <Link href={`/admin/companies/${c.id}`} className="text-grove hover:underline">
+                        {c.name}
+                      </Link>
+                    </td>
                     <td className="px-4 py-2.5">
                       <div className="flex flex-wrap gap-1">
                         {(kindsByCompany.get(c.id) ?? []).map((k) => (

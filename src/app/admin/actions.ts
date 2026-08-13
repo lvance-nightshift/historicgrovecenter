@@ -15,6 +15,7 @@ import {
   companyKindAssignments,
   companyMemberships,
   roleAssignments,
+  mediaAttachments,
 } from "@/db/schema";
 import { getActor, isAdmin, type RoleScope } from "@/lib/auth/authorize";
 import {
@@ -255,4 +256,42 @@ export async function setCompanyKinds(
   }
   revalidatePath(`/admin/companies/${companyId}`);
   revalidatePath("/admin/companies");
+}
+
+export async function setCompanyPublished(
+  companyId: number,
+  published: boolean,
+): Promise<void> {
+  await assertAdmin();
+  await getDb()
+    .update(companies)
+    .set({ published, updatedAt: new Date() })
+    .where(eq(companies.id, companyId));
+  revalidatePath("/admin/companies");
+  revalidatePath("/merchants");
+  revalidatePath("/");
+}
+
+export async function deleteCompany(companyId: number): Promise<void> {
+  await assertAdmin();
+  const db = getDb();
+  // Clean up polymorphic references that have no FK cascade.
+  await db
+    .delete(mediaAttachments)
+    .where(
+      and(
+        eq(mediaAttachments.targetType, "company"),
+        eq(mediaAttachments.targetId, companyId),
+      ),
+    );
+  await db
+    .delete(roleAssignments)
+    .where(
+      and(eq(roleAssignments.scope, "company"), eq(roleAssignments.scopeId, companyId)),
+    );
+  // Company row: cascades kind assignments + memberships; events.owner is set null.
+  await db.delete(companies).where(eq(companies.id, companyId));
+  revalidatePath("/admin/companies");
+  revalidatePath("/merchants");
+  revalidatePath("/");
 }
