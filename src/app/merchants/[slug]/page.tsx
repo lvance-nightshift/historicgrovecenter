@@ -60,9 +60,10 @@ export default async function MerchantPage({ params }: Params) {
               </span>
             )}
             {m.description ? (
-              <p className="whitespace-pre-line text-lg leading-relaxed text-foreground/85">
-                {m.description}
-              </p>
+              <div
+                className="text-lg leading-relaxed text-foreground/85 [&_a]:text-grove [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-muted [&_li]:mb-1 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-3 [&_strong]:font-semibold [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
+                dangerouslySetInnerHTML={{ __html: m.description }}
+              />
             ) : (
               <p className="text-muted">More about {m.name} coming soon.</p>
             )}

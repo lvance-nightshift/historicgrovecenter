@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companies } from "@/db/schema";
+import sanitizeHtml from "sanitize-html";
 import { getActor, canManageCompany } from "@/lib/auth/authorize";
 import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
 
@@ -32,6 +33,22 @@ export type MerchantListingInput = {
 function clean(v?: string): string | null {
   const t = (v ?? "").trim();
   return t.length ? t : null;
+}
+
+/** Sanitize merchant-authored rich text down to a safe formatting subset. */
+function richText(v?: string): string | null {
+  const t = (v ?? "").trim();
+  if (!t) return null;
+  const cleaned = sanitizeHtml(t, {
+    allowedTags: ["p", "br", "strong", "em", "b", "i", "u", "ul", "ol", "li", "a", "blockquote"],
+    allowedAttributes: { a: ["href"] },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    transformTags: {
+      a: sanitizeHtml.simpleTransform("a", { rel: "noopener noreferrer", target: "_blank" }),
+    },
+  }).trim();
+  // Empty once tags are stripped (e.g. "<p></p>") → treat as no description.
+  return cleaned.replace(/<[^>]+>/g, "").trim().length ? cleaned : null;
 }
 
 /** Normalize a URL-ish value: add https:// if it looks like a bare domain. */
@@ -63,7 +80,7 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
       name,
       category: clean(input.category),
       tagline: clean(input.tagline),
-      description: clean(input.description),
+      description: richText(input.description),
       hours: clean(input.hours),
       phone: clean(input.phone),
       website: url(input.website),

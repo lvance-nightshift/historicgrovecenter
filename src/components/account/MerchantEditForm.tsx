@@ -2,7 +2,19 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { updateMyCompany } from "@/app/account/actions";
+
+// contentEditable editor → client-only.
+const RichTextEditor = dynamic(
+  () => import("@/components/account/RichTextEditor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-40 animate-pulse rounded-lg border border-border bg-surface" />
+    ),
+  },
+);
 import { CATEGORIES, type Merchant } from "@/lib/merchants";
 import MerchantCard from "@/components/MerchantCard";
 import HoursEditor from "@/components/account/HoursEditor";
@@ -113,10 +125,18 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
           </label>
         </div>
 
-        <label className={label}>
+        <div className={label}>
           <span className={labelText}>Description</span>
-          <textarea value={f.description} onChange={set("description")} rows={5} className={input} />
-        </label>
+          <div className="mt-1">
+            <RichTextEditor
+              value={f.description}
+              onChange={(html) => {
+                setF((prev) => ({ ...prev, description: html }));
+                setSaved(false);
+              }}
+            />
+          </div>
+        </div>
 
         <div className={label}>
           <span className={labelText}>Weekly hours</span>

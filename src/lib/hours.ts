@@ -54,9 +54,12 @@ export function formatTime(hhmm: string): string {
   return `${h}:${min} ${ampm}`;
 }
 
-/** Human string for one day, e.g. "9:00 AM – 5:00 PM" or "Closed". */
+/**
+ * Human string for one day, e.g. "9:00 AM – 5:00 PM" or "Closed".
+ * A day with no open hours (unset or explicitly closed) reads "Closed" — on a
+ * public weekly table, a blank day means the shop is closed that day.
+ */
 export function formatDay(d: DayHours | undefined): string {
-  if (!d) return "—";
-  if (d.closed) return "Closed";
+  if (!d || d.closed) return "Closed";
   return `${formatTime(d.open)} – ${formatTime(d.close)}`;
 }

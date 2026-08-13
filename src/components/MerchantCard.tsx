@@ -2,6 +2,10 @@ import Link from "next/link";
 import type { Merchant } from "@/lib/merchants";
 
 export default function MerchantCard({ merchant }: { merchant: Merchant }) {
+  // Description may be rich-text HTML — strip to a plain-text teaser.
+  const excerpt = merchant.description
+    ? merchant.description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+    : "";
   return (
     <Link
       href={`/merchants/${merchant.slug}`}
@@ -20,9 +24,9 @@ export default function MerchantCard({ merchant }: { merchant: Merchant }) {
           {merchant.tagline}
         </p>
       )}
-      {merchant.description && (
+      {excerpt && (
         <p className="mt-3 flex-1 text-sm leading-relaxed text-muted line-clamp-3">
-          {merchant.description}
+          {excerpt}
         </p>
       )}
 
