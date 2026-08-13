@@ -13,8 +13,18 @@ import { and, eq } from "drizzle-orm";
 import { getDb, isDbConfigured } from "@/db";
 import { events, eventParticipations, people } from "@/db/schema";
 import { isEmailConfigured, sendVendorRegistrationEmails } from "@/lib/email";
+import { r2PublicUrl } from "@/lib/r2";
 import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 import type { VendorState } from "./vendor-state";
+
+function docUrl(key: string): string | undefined {
+  if (!key) return undefined;
+  try {
+    return r2PublicUrl(key);
+  } catch {
+    return undefined;
+  }
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,8 +78,8 @@ export async function submitVendorRegistration(
   const products = String(formData.get("products") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const agree = formData.get("agree") != null;
-  const hasPermit = formData.get("permit") != null;
-  const hasInsurance = formData.get("insurance") != null;
+  const permitDocKey = String(formData.get("permitDocKey") ?? "").trim();
+  const insuranceDocKey = String(formData.get("insuranceDocKey") ?? "").trim();
   let spaces = Number(formData.get("spaces") ?? "1");
   if (!Number.isFinite(spaces) || spaces < 1) spaces = 1;
   if (spaces > 5) spaces = 5;
@@ -83,8 +93,8 @@ export async function submitVendorRegistration(
   if (!phone) fieldErrors.phone = "Please enter a phone number.";
   if (!products) fieldErrors.products = productsLabel;
   if (!agree) fieldErrors.agree = "Please acknowledge the booth fee and terms.";
-  if (isFood && !hasPermit) fieldErrors.permit = "Food vendors need a current Oak Ridge permit.";
-  if (isFood && !hasInsurance) fieldErrors.insurance = "Food vendors need liability insurance.";
+  if (isFood && !permitDocKey) fieldErrors.permit = "Please upload your Oak Ridge food permit.";
+  if (isFood && !insuranceDocKey) fieldErrors.insurance = "Please upload your certificate of insurance.";
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, message: "Please fix the highlighted fields.", fieldErrors };
   }
@@ -137,6 +147,8 @@ export async function submitVendorRegistration(
               status: "pending",
               feeAmountCents: feeCents,
               paymentStatus: "unpaid",
+              permitDocKey: isFood ? permitDocKey || null : null,
+              insuranceDocKey: isFood ? insuranceDocKey || null : null,
               applicationData: {
                 vendorType: isFood ? "food" : "craft",
                 businessName,
@@ -147,7 +159,9 @@ export async function submitVendorRegistration(
                 spaces,
                 notes: notes || null,
                 agreedToFee: true,
-                ...(isFood ? { hasPermit, hasInsurance } : {}),
+                ...(isFood
+                  ? { permitUploaded: Boolean(permitDocKey), insuranceUploaded: Boolean(insuranceDocKey) }
+                  : {}),
                 source: "pumpkin-fest-web-form",
               },
               notes: notes || null,
@@ -179,6 +193,8 @@ export async function submitVendorRegistration(
           feeLabel,
           notes: notes || undefined,
           isFood,
+          permitUrl: isFood ? docUrl(permitDocKey) : undefined,
+          insuranceUrl: isFood ? docUrl(insuranceDocKey) : undefined,
         },
         PUMPKIN_FEST.title,
       );
@@ -197,7 +213,7 @@ export async function submitVendorRegistration(
   return {
     ok: true,
     message: isFood
-      ? "Thanks! Your food-vendor registration has been received. Someone from the Grove Center will follow up to confirm your space and collect your Oak Ridge permit and certificate of insurance. Check your email for a confirmation."
+      ? "Thanks! Your food-vendor registration and documents have been received. Someone from the Grove Center will follow up to confirm your space and booth fee. Check your email for a confirmation."
       : "Thanks! Your vendor registration has been received. Spaces are limited and first come, first served — someone from the Grove Center will follow up to confirm your booth and booth fee. Check your email for a confirmation.",
   };
 }

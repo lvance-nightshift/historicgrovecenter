@@ -105,6 +105,8 @@ export type VendorRegistration = {
   feeLabel: string; // e.g. "$90 (2 × $45)"
   notes?: string;
   isFood?: boolean;
+  permitUrl?: string;
+  insuranceUrl?: string;
 };
 
 /**
@@ -139,11 +141,12 @@ export async function sendVendorRegistrationEmails(
       `${reg.isFood ? "Serves:   " : "Sells:    "}${reg.products}`,
       `Spaces:    ${reg.spaces}`,
       `Booth fee: ${reg.feeLabel}`,
-      reg.isFood ? "Attested:  has Oak Ridge food permit + liability insurance" : null,
+      reg.isFood && reg.permitUrl ? `Permit:    ${reg.permitUrl}` : null,
+      reg.isFood && reg.insuranceUrl ? `Insurance: ${reg.insuranceUrl}` : null,
       reg.notes ? `Notes:     ${reg.notes}` : null,
       "",
       reg.isFood
-        ? "Follow up to confirm the space, collect payment, and collect the Oak Ridge food permit + certificate of insurance."
+        ? "Follow up to confirm the space and collect payment. The permit + certificate of insurance are linked above."
         : "Follow up to confirm the booth space and collect payment.",
     ]
       .filter((l) => l !== null)
@@ -167,7 +170,7 @@ export async function sendVendorRegistrationEmails(
       ...(reg.isFood
         ? [
             "",
-            "Food vendors: you'll need a current Oak Ridge food permit and a certificate of liability insurance. Please reply to this email with both attached, or bring them when we follow up.",
+            "We received your Oak Ridge food permit and certificate of insurance with your registration — thank you. If anything needs updating, just reply to this email.",
           ]
         : []),
       "",

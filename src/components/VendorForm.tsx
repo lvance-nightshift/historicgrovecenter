@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitVendorRegistration } from "@/app/actions/vendor-registration";
 import { initialVendorState } from "@/app/actions/vendor-state";
+import DocUpload from "@/components/DocUpload";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -120,28 +121,19 @@ export default function VendorForm({ variant }: { variant: "craft" | "food" }) {
       </label>
 
       {isFood && (
-        <div className="space-y-2 rounded-lg border border-brass/40 bg-brass/5 p-4">
+        <div className="space-y-4 rounded-lg border border-brass/40 bg-brass/5 p-4">
           <p className="text-sm font-medium text-foreground">
-            Oak Ridge requires food vendors to be permitted &amp; insured.
+            Oak Ridge requires food vendors to be permitted &amp; insured — upload
+            both here (PDF, JPG, or PNG).
           </p>
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" name="permit" className="mt-1" />
-            <span className="text-foreground/80">
-              I have (or will provide) a current Oak Ridge food-service permit.
-            </span>
-          </label>
-          <Err msg={state.fieldErrors?.permit} />
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" name="insurance" className="mt-1" />
-            <span className="text-foreground/80">
-              I carry liability insurance and can provide a certificate.
-            </span>
-          </label>
-          <Err msg={state.fieldErrors?.insurance} />
-          <p className="text-xs text-muted">
-            We&apos;ll ask you to email your permit and certificate of insurance
-            after you register.
-          </p>
+          <div>
+            <DocUpload name="permitDocKey" label="Oak Ridge food-service permit" />
+            <Err msg={state.fieldErrors?.permit} />
+          </div>
+          <div>
+            <DocUpload name="insuranceDocKey" label="Certificate of liability insurance" />
+            <Err msg={state.fieldErrors?.insurance} />
+          </div>
         </div>
       )}
 
