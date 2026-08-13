@@ -7,7 +7,7 @@
  */
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   people,
@@ -15,10 +15,10 @@ import {
   companyKindAssignments,
   companyMemberships,
   roleAssignments,
+  roles,
   mediaAttachments,
   merchantCategories,
 } from "@/db/schema";
-import { isNotNull } from "drizzle-orm";
 import { normalizeCategories } from "@/lib/merchants";
 import { getActor, isAdmin, type RoleScope } from "@/lib/auth/authorize";
 import {
@@ -365,4 +365,79 @@ export async function deleteMerchantCategory(id: number): Promise<void> {
   await db.delete(merchantCategories).where(eq(merchantCategories.id, id));
   await cascadeCategory(row.name, null);
   revalidateCategoryConsumers();
+}
+
+/* ---------------- Company owners (merchant role assignment) ---------------- */
+
+async function merchantRoleId(): Promise<number | null> {
+  const [r] = await getDb().select({ id: roles.id }).from(roles).where(eq(roles.key, "merchant"));
+  return r?.id ?? null;
+}
+
+/** Assign a person (found or created by email) as an owner/manager of a company. */
+export async function addCompanyOwnerByEmail(
+  companyId: number,
+  email: string,
+  name?: string,
+): Promise<void> {
+  await assertAdmin();
+  const em = email.trim();
+  if (!em) throw new Error("Email is required.");
+  const db = getDb();
+
+  let [person] = await db
+    .select({ id: people.id })
+    .from(people)
+    .where(sql`lower(${people.email}) = lower(${em})`);
+  if (!person) {
+    const n = (name ?? "").trim();
+    const i = n.indexOf(" ");
+    const firstName = n ? (i === -1 ? n : n.slice(0, i)) : null;
+    const lastName = n && i !== -1 ? n.slice(i + 1) : null;
+    [person] = await db
+      .insert(people)
+      .values({ email: em, firstName, lastName })
+      .returning({ id: people.id });
+  }
+
+  const roleId = await merchantRoleId();
+  if (!roleId) throw new Error("Merchant role is missing.");
+
+  const existing = await db
+    .select({ id: roleAssignments.id })
+    .from(roleAssignments)
+    .where(
+      and(
+        eq(roleAssignments.personId, person.id),
+        eq(roleAssignments.roleId, roleId),
+        eq(roleAssignments.scope, "company"),
+        eq(roleAssignments.scopeId, companyId),
+      ),
+    );
+  if (existing.length === 0) {
+    await db
+      .insert(roleAssignments)
+      .values({ personId: person.id, roleId, scope: "company", scopeId: companyId });
+  }
+  revalidatePath(`/admin/companies/${companyId}`);
+}
+
+export async function removeCompanyOwner(
+  companyId: number,
+  personId: number,
+): Promise<void> {
+  await assertAdmin();
+  const roleId = await merchantRoleId();
+  if (!roleId) return;
+  await getDb()
+    .delete(roleAssignments)
+    .where(
+      and(
+        eq(roleAssignments.personId, personId),
+        eq(roleAssignments.roleId, roleId),
+        eq(roleAssignments.scope, "company"),
+        eq(roleAssignments.scopeId, companyId),
+      ),
+    );
+  revalidatePath(`/admin/companies/${companyId}`);
 }

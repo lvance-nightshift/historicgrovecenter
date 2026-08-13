@@ -10,7 +10,14 @@
 import "server-only";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { companies, media, mediaAttachments } from "@/db/schema";
+import {
+  companies,
+  media,
+  mediaAttachments,
+  people,
+  roleAssignments,
+  roles,
+} from "@/db/schema";
 import { canManageCompany, type Actor } from "@/lib/auth/authorize";
 import { mediaUrl } from "@/lib/media";
 import { normalizeCategories } from "@/lib/merchants";
@@ -47,6 +54,35 @@ export type EditableCompany = {
 };
 
 export const GALLERY_LIMIT = 3;
+
+export type CompanyOwner = { personId: number; name: string; email: string | null };
+
+/** People who manage a company (hold the company-scoped `merchant` role). */
+export async function getCompanyOwners(companyId: number): Promise<CompanyOwner[]> {
+  try {
+    const rows = await getDb()
+      .select({
+        personId: people.id,
+        first: people.firstName,
+        last: people.lastName,
+        email: people.email,
+      })
+      .from(roleAssignments)
+      .innerJoin(roles, and(eq(roles.id, roleAssignments.roleId), eq(roles.key, "merchant")))
+      .innerJoin(people, eq(people.id, roleAssignments.personId))
+      .where(
+        and(eq(roleAssignments.scope, "company"), eq(roleAssignments.scopeId, companyId)),
+      );
+    return rows.map((r) => ({
+      personId: r.personId,
+      name: [r.first, r.last].filter(Boolean).join(" ") || r.email || "Unnamed",
+      email: r.email,
+    }));
+  } catch (err) {
+    console.error("getCompanyOwners failed", err);
+    return [];
+  }
+}
 
 /** Company ids the actor manages as a merchant (company-scoped role). */
 export function managedCompanyIds(actor: Actor): number[] {

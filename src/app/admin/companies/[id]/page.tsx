@@ -5,12 +5,13 @@ import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companyKinds, companyKindAssignments } from "@/db/schema";
 import { getActor } from "@/lib/auth/authorize";
-import { getEditableCompany } from "@/lib/account";
+import { getEditableCompany, getCompanyOwners } from "@/lib/account";
 import { getCompanyEvents } from "@/lib/events-db";
 import { getCategoryNames } from "@/lib/categories";
 import MerchantEditForm from "@/components/account/MerchantEditForm";
 import MerchantEventsManager from "@/components/account/MerchantEventsManager";
 import AdminCompanyControls from "@/components/admin/AdminCompanyControls";
+import AdminCompanyOwners from "@/components/admin/AdminCompanyOwners";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Edit company" };
@@ -28,9 +29,10 @@ export default async function AdminCompanyEditPage({ params }: Params) {
   if (!company) notFound();
 
   const db = getDb();
-  const [events, categoryOptions, allKinds, currentKinds] = await Promise.all([
+  const [events, categoryOptions, owners, allKinds, currentKinds] = await Promise.all([
     getCompanyEvents(companyId),
     getCategoryNames(),
+    getCompanyOwners(companyId),
     db
       .select({ id: companyKinds.id, label: companyKinds.label })
       .from(companyKinds)
@@ -58,13 +60,14 @@ export default async function AdminCompanyEditPage({ params }: Params) {
         </Link>
       )}
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-4">
         <AdminCompanyControls
           companyId={company.id}
           initialPublished={company.published}
           allKinds={allKinds}
           initialKindIds={currentKinds.map((k) => k.kindId)}
         />
+        <AdminCompanyOwners companyId={company.id} initialOwners={owners} />
       </div>
 
       <div className="mt-8">
