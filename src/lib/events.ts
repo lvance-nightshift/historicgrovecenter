@@ -15,6 +15,7 @@ export type PublicEvent = {
   location: string;
   badge: string; // category-like label (business name, or "Grove Center")
   summary: string;
+  ticketUrl?: string; // external tickets/RSVP link
 };
 
 const parse = (d: string) => new Date(`${d}T00:00:00`);

@@ -39,6 +39,16 @@ export default function EventCard({ event }: { event: PublicEvent }) {
         <p className="mt-2 text-xs font-medium text-foreground/70">
           📍 {event.location}
         </p>
+        {event.ticketUrl && (
+          <a
+            href={event.ticketUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block rounded-full bg-grove px-4 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-grove-dark"
+          >
+            Get tickets ↗
+          </a>
+        )}
       </div>
     </article>
   );

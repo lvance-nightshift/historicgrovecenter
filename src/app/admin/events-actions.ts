@@ -24,11 +24,18 @@ export type AdminEventInput = {
   location?: string;
   description?: string;
   published?: boolean;
+  ticketUrl?: string;
+  vendorRegistration?: boolean;
 };
 
 function clean(v?: string): string | null {
   const t = (v ?? "").trim();
   return t.length ? t : null;
+}
+function url(v?: string): string | null {
+  const t = (v ?? "").trim();
+  if (!t) return null;
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`;
 }
 function toDate(v?: string | null): Date | null {
   if (!v) return null;
@@ -62,6 +69,8 @@ export async function adminCreateEvent(input: AdminEventInput): Promise<number> 
       location: clean(input.location),
       description: clean(input.description),
       published: input.published ?? true,
+      ticketUrl: url(input.ticketUrl),
+      vendorAppsOpen: input.vendorRegistration ?? false,
     })
     .returning({ id: events.id });
   revalidate();
@@ -83,6 +92,8 @@ export async function adminUpdateEvent(id: number, input: AdminEventInput): Prom
       location: clean(input.location),
       description: clean(input.description),
       published: input.published ?? true,
+      ticketUrl: url(input.ticketUrl),
+      vendorAppsOpen: input.vendorRegistration ?? false,
       updatedAt: new Date(),
     })
     .where(eq(events.id, id));

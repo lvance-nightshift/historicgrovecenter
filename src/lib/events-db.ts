@@ -110,6 +110,7 @@ export async function getPublicEvents(): Promise<{
         endAt: events.endAt,
         location: events.location,
         description: events.description,
+        ticketUrl: events.ticketUrl,
         ownerName: companies.name,
       })
       .from(events)
@@ -133,6 +134,7 @@ export async function getPublicEvents(): Promise<{
         location: r.location ?? "Historic Grove Center",
         badge: r.type === "business" ? r.ownerName ?? "Merchant event" : "Grove Center",
         summary: desc ? (desc.length > 140 ? `${desc.slice(0, 137)}…` : desc) : "",
+        ticketUrl: r.ticketUrl ?? undefined,
       };
       if (date >= today) upcoming.push(ev);
       else past.push(ev);
@@ -213,6 +215,8 @@ export type AdminEvent = {
   location: string | null;
   description: string | null;
   published: boolean;
+  ticketUrl: string | null;
+  vendorAppsOpen: boolean;
 };
 
 /** Every event (association + business) for the admin events manager. */
@@ -230,6 +234,8 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         location: events.location,
         description: events.description,
         published: events.published,
+        ticketUrl: events.ticketUrl,
+        vendorAppsOpen: events.vendorAppsOpen,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))

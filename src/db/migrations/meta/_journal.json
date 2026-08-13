@@ -50,6 +50,13 @@
       "when": 1786626901517,
       "tag": "0006_fat_ultron",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786653139319,
+      "tag": "0007_strong_tyrannus",
+      "breakpoints": true
     }
   ]
 }

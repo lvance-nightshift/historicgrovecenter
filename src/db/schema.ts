@@ -218,6 +218,9 @@ export const events = pgTable("events", {
   vendorAppsOpen: boolean("vendor_apps_open").notNull().default(false),
   foodAppsOpen: boolean("food_apps_open").notNull().default(false),
   bandAppsOpen: boolean("band_apps_open").notNull().default(false),
+  // External tickets/RSVP link (e.g. Eventbrite). When set, the public
+  // calendar shows a "Get tickets" button.
+  ticketUrl: text("ticket_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

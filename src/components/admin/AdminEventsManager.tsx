@@ -23,6 +23,8 @@ type Form = {
   location: string;
   description: string;
   published: boolean;
+  ticketUrl: string;
+  vendorRegistration: boolean;
 };
 
 const blank: Form = {
@@ -34,6 +36,8 @@ const blank: Form = {
   location: "",
   description: "",
   published: true,
+  ticketUrl: "",
+  vendorRegistration: false,
 };
 
 function formatWhen(iso: string | null): string {
@@ -81,6 +85,8 @@ export default function AdminEventsManager({
       location: e.location ?? "",
       description: e.description ?? "",
       published: e.published,
+      ticketUrl: e.ticketUrl ?? "",
+      vendorRegistration: e.vendorAppsOpen,
     });
     setEditing(e.id);
     setError(null);
@@ -96,6 +102,8 @@ export default function AdminEventsManager({
     location: form.location,
     description: form.description,
     published: form.published,
+    ticketUrl: form.ticketUrl,
+    vendorRegistration: form.vendorRegistration,
   });
 
   function rowFrom(id: number): AdminEvent {
@@ -111,6 +119,8 @@ export default function AdminEventsManager({
       location: form.location || null,
       description: form.description || null,
       published: p.published,
+      ticketUrl: form.ticketUrl || null,
+      vendorAppsOpen: form.vendorRegistration,
     };
   }
 
@@ -166,9 +176,16 @@ export default function AdminEventsManager({
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <Link href={`/admin/events/${e.id}/registrations`} className="font-medium text-grove hover:underline">
-                Registrations
-              </Link>
+              {e.vendorAppsOpen && (
+                <Link href={`/admin/events/${e.id}/registrations`} className="font-medium text-grove hover:underline">
+                  Registrations
+                </Link>
+              )}
+              {e.ticketUrl && (
+                <a href={e.ticketUrl} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-grove">
+                  Tickets ↗
+                </a>
+              )}
               <button type="button" onClick={() => openEdit(e)} className="font-medium text-grove hover:underline">Edit</button>
               <button type="button" onClick={() => remove(e.id)} disabled={busy} className="text-brick-dark hover:underline">Delete</button>
             </div>
@@ -225,6 +242,27 @@ export default function AdminEventsManager({
           <label className="block text-sm">
             <span className="font-medium text-foreground">Details <span className="text-muted">(optional)</span></span>
             <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={input} />
+          </label>
+          <label className="block text-sm">
+            <span className="font-medium text-foreground">
+              Ticket link <span className="text-muted">(Eventbrite, etc. — optional)</span>
+            </span>
+            <input
+              value={form.ticketUrl}
+              onChange={(e) => setForm({ ...form, ticketUrl: e.target.value })}
+              placeholder="https://www.eventbrite.com/e/..."
+              className={input}
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.vendorRegistration}
+              onChange={(e) => setForm({ ...form, vendorRegistration: e.target.checked })}
+            />
+            <span className="text-foreground/80">
+              Takes vendor registrations (shows the Registrations view)
+            </span>
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} />
