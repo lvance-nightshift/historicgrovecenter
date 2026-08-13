@@ -26,6 +26,7 @@ export type AdminEventInput = {
   published?: boolean;
   ticketUrl?: string;
   vendorRegistration?: boolean;
+  foodRegistration?: boolean;
 };
 
 function clean(v?: string): string | null {
@@ -71,6 +72,7 @@ export async function adminCreateEvent(input: AdminEventInput): Promise<number> 
       published: input.published ?? true,
       ticketUrl: url(input.ticketUrl),
       vendorAppsOpen: input.vendorRegistration ?? false,
+      foodAppsOpen: input.foodRegistration ?? false,
     })
     .returning({ id: events.id });
   revalidate();
@@ -94,6 +96,7 @@ export async function adminUpdateEvent(id: number, input: AdminEventInput): Prom
       published: input.published ?? true,
       ticketUrl: url(input.ticketUrl),
       vendorAppsOpen: input.vendorRegistration ?? false,
+      foodAppsOpen: input.foodRegistration ?? false,
       updatedAt: new Date(),
     })
     .where(eq(events.id, id));

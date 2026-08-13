@@ -112,6 +112,7 @@ export async function getPublicEvents(): Promise<{
         description: events.description,
         ticketUrl: events.ticketUrl,
         vendorAppsOpen: events.vendorAppsOpen,
+        foodAppsOpen: events.foodAppsOpen,
         ownerName: companies.name,
       })
       .from(events)
@@ -136,7 +137,8 @@ export async function getPublicEvents(): Promise<{
         badge: r.type === "business" ? r.ownerName ?? "Merchant event" : "Grove Center",
         summary: desc ? (desc.length > 140 ? `${desc.slice(0, 137)}…` : desc) : "",
         ticketUrl: r.ticketUrl ?? undefined,
-        registerUrl: r.vendorAppsOpen ? `/events/${r.slug}/register` : undefined,
+        registerUrl:
+          r.vendorAppsOpen || r.foodAppsOpen ? `/events/${r.slug}/register` : undefined,
       };
       if (date >= today) upcoming.push(ev);
       else past.push(ev);
@@ -219,6 +221,7 @@ export type AdminEvent = {
   published: boolean;
   ticketUrl: string | null;
   vendorAppsOpen: boolean;
+  foodAppsOpen: boolean;
 };
 
 /** Every event (association + business) for the admin events manager. */
@@ -238,6 +241,7 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         published: events.published,
         ticketUrl: events.ticketUrl,
         vendorAppsOpen: events.vendorAppsOpen,
+        foodAppsOpen: events.foodAppsOpen,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
@@ -261,12 +265,14 @@ export type RegisterableEvent = {
   endAt: string | null;
   location: string | null;
   description: string | null;
+  vendorAppsOpen: boolean;
+  foodAppsOpen: boolean;
 };
 
 /**
- * A published event that is accepting vendor registrations, by slug.
- * Returns null if the event doesn't exist, isn't published, or has its
- * registration form closed — the public register page uses this to gate access.
+ * A published event that is accepting vendor and/or food-truck registrations,
+ * by slug. Returns null if the event doesn't exist, isn't published, or has
+ * both intake toggles off — the public register page uses this to gate access.
  */
 export async function getRegisterableEvent(
   slug: string,
@@ -281,13 +287,15 @@ export async function getRegisterableEvent(
         endAt: events.endAt,
         location: events.location,
         description: events.description,
+        vendorAppsOpen: events.vendorAppsOpen,
+        foodAppsOpen: events.foodAppsOpen,
       })
       .from(events)
       .where(
         and(
           eq(events.slug, slug),
           eq(events.published, true),
-          eq(events.vendorAppsOpen, true),
+          or(eq(events.vendorAppsOpen, true), eq(events.foodAppsOpen, true)),
         ),
       )
       .limit(1);

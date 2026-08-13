@@ -25,6 +25,7 @@ type Form = {
   published: boolean;
   ticketUrl: string;
   vendorRegistration: boolean;
+  foodRegistration: boolean;
 };
 
 const blank: Form = {
@@ -38,6 +39,7 @@ const blank: Form = {
   published: true,
   ticketUrl: "",
   vendorRegistration: false,
+  foodRegistration: false,
 };
 
 function formatWhen(iso: string | null): string {
@@ -87,6 +89,7 @@ export default function AdminEventsManager({
       published: e.published,
       ticketUrl: e.ticketUrl ?? "",
       vendorRegistration: e.vendorAppsOpen,
+      foodRegistration: e.foodAppsOpen,
     });
     setEditing(e.id);
     setError(null);
@@ -104,6 +107,7 @@ export default function AdminEventsManager({
     published: form.published,
     ticketUrl: form.ticketUrl,
     vendorRegistration: form.vendorRegistration,
+    foodRegistration: form.foodRegistration,
   });
 
   function rowFrom(id: number): AdminEvent {
@@ -121,6 +125,7 @@ export default function AdminEventsManager({
       published: p.published,
       ticketUrl: form.ticketUrl || null,
       vendorAppsOpen: form.vendorRegistration,
+      foodAppsOpen: form.foodRegistration,
     };
   }
 
@@ -176,7 +181,7 @@ export default function AdminEventsManager({
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              {e.vendorAppsOpen && (
+              {(e.vendorAppsOpen || e.foodAppsOpen) && (
                 <Link href={`/admin/events/${e.id}/registrations`} className="font-medium text-grove hover:underline">
                   Registrations
                 </Link>
@@ -262,6 +267,16 @@ export default function AdminEventsManager({
             />
             <span className="text-foreground/80">
               Takes vendor registrations (shows the Registrations view)
+            </span>
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.foodRegistration}
+              onChange={(e) => setForm({ ...form, foodRegistration: e.target.checked })}
+            />
+            <span className="text-foreground/80">
+              Takes food-truck registrations (permit &amp; insurance uploads required)
             </span>
           </label>
           <label className="flex items-center gap-2 text-sm">

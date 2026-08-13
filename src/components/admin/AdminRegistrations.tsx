@@ -19,7 +19,7 @@ const area =
   "mt-1 w-full box-border rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
 
 function typeLabel(t: string) {
-  return t === "food_vendor" ? "Food" : t === "vendor" ? "Craft" : t.replace("_", " ");
+  return t === "food_vendor" ? "Food" : t === "vendor" ? "Vendor" : t.replace("_", " ");
 }
 
 export default function AdminRegistrations({

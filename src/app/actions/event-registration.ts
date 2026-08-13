@@ -16,9 +16,19 @@ import { and, eq } from "drizzle-orm";
 import { getDb, isDbConfigured } from "@/db";
 import { events, eventParticipations, people } from "@/db/schema";
 import { isEmailConfigured, sendEventRegistrationEmails } from "@/lib/email";
+import { presignDocDownload } from "@/lib/r2";
 import type { VendorState } from "./vendor-state";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function docUrl(key: string): Promise<string | undefined> {
+  if (!key) return undefined;
+  try {
+    return await presignDocDownload(key); // short-lived signed link (private)
+  } catch {
+    return undefined;
+  }
+}
 
 const etDateLabel = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/New_York",
@@ -66,6 +76,7 @@ export async function submitEventRegistration(
   }
 
   const slug = String(formData.get("eventSlug") ?? "").trim();
+  const isFood = String(formData.get("vendorType") ?? "") === "food";
   const businessName = String(formData.get("businessName") ?? "").trim();
   const contactName = String(formData.get("contactName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
@@ -73,6 +84,8 @@ export async function submitEventRegistration(
   const products = String(formData.get("products") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const agree = formData.get("agree") != null;
+  const permitDocKey = String(formData.get("permitDocKey") ?? "").trim();
+  const insuranceDocKey = String(formData.get("insuranceDocKey") ?? "").trim();
 
   const fieldErrors: VendorState["fieldErrors"] = {};
   if (!businessName) fieldErrors.businessName = "Please enter your business or booth name.";
@@ -80,8 +93,10 @@ export async function submitEventRegistration(
   if (!email) fieldErrors.email = "Please enter your email.";
   else if (!EMAIL_RE.test(email)) fieldErrors.email = "Enter a valid email.";
   if (!phone) fieldErrors.phone = "Please enter a phone number.";
-  if (!products) fieldErrors.products = "Tell us what you'll be offering.";
+  if (!products) fieldErrors.products = isFood ? "Tell us what you'll be serving." : "Tell us what you'll be offering.";
   if (!agree) fieldErrors.agree = "Please acknowledge the terms.";
+  if (isFood && !permitDocKey) fieldErrors.permit = "Please upload your food-service permit.";
+  if (isFood && !insuranceDocKey) fieldErrors.insurance = "Please upload your certificate of insurance.";
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, message: "Please fix the highlighted fields.", fieldErrors };
   }
@@ -111,14 +126,18 @@ export async function submitEventRegistration(
           location: events.location,
           published: events.published,
           vendorAppsOpen: events.vendorAppsOpen,
+          foodAppsOpen: events.foodAppsOpen,
         })
         .from(events)
         .where(eq(events.slug, slug))
         .limit(1);
-      if (!ev || !ev.published || !ev.vendorAppsOpen) {
+      const intakeOpen = ev && ev.published && (isFood ? ev.foodAppsOpen : ev.vendorAppsOpen);
+      if (!intakeOpen) {
         return {
           ok: false,
-          message: "This event isn't accepting vendor registrations right now.",
+          message: isFood
+            ? "This event isn't accepting food-truck registrations right now."
+            : "This event isn't accepting vendor registrations right now.",
         };
       }
       eventRow = { id: ev.id, title: ev.title, startAt: ev.startAt, location: ev.location };
@@ -156,11 +175,13 @@ export async function submitEventRegistration(
           .values({
             eventId: eventRow.id,
             personId,
-            type: "vendor",
+            type: isFood ? "food_vendor" : "vendor",
             status: "pending",
             paymentStatus: "unpaid",
+            permitDocKey: isFood ? permitDocKey || null : null,
+            insuranceDocKey: isFood ? insuranceDocKey || null : null,
             applicationData: {
-              vendorType: "vendor",
+              vendorType: isFood ? "food" : "vendor",
               businessName,
               contactName,
               email,
@@ -168,6 +189,9 @@ export async function submitEventRegistration(
               products,
               notes: notes || null,
               agreedToTerms: true,
+              ...(isFood
+                ? { permitUploaded: Boolean(permitDocKey), insuranceUploaded: Boolean(insuranceDocKey) }
+                : {}),
               source: "event-web-form",
             },
             notes: notes || null,
@@ -186,7 +210,17 @@ export async function submitEventRegistration(
   if (isEmailConfigured() && eventRow) {
     try {
       await sendEventRegistrationEmails(
-        { businessName, contactName, email, phone, products, notes: notes || undefined },
+        {
+          businessName,
+          contactName,
+          email,
+          phone,
+          products,
+          notes: notes || undefined,
+          isFood,
+          permitUrl: isFood ? await docUrl(permitDocKey) : undefined,
+          insuranceUrl: isFood ? await docUrl(insuranceDocKey) : undefined,
+        },
         {
           name: eventRow.title,
           dateLabel: eventRow.startAt ? etDateLabel.format(eventRow.startAt) : undefined,
@@ -207,7 +241,8 @@ export async function submitEventRegistration(
 
   return {
     ok: true,
-    message:
-      "Thanks! Your vendor registration has been received. Someone from the Grove Center will follow up to confirm your space. Check your email for a confirmation.",
+    message: isFood
+      ? "Thanks! Your food-vendor registration and documents have been received. Someone from the Grove Center will follow up to confirm your space. Check your email for a confirmation."
+      : "Thanks! Your vendor registration has been received. Someone from the Grove Center will follow up to confirm your space. Check your email for a confirmation.",
   };
 }

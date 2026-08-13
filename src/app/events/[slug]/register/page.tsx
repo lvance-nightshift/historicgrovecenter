@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import EventRegistrationForm from "@/components/EventRegistrationForm";
+import EventRegistrationTabs from "@/components/EventRegistrationTabs";
 import { getRegisterableEvent } from "@/lib/events-db";
 
 export const dynamic = "force-dynamic";
@@ -82,7 +82,11 @@ export default async function EventRegisterPage({
             confirm your spot.
           </p>
           <div className="mt-6">
-            <EventRegistrationForm eventSlug={event.slug} />
+            <EventRegistrationTabs
+              eventSlug={event.slug}
+              vendorOpen={event.vendorAppsOpen}
+              foodOpen={event.foodAppsOpen}
+            />
           </div>
         </div>
 

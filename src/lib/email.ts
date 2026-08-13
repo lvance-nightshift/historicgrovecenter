@@ -202,6 +202,9 @@ export type EventSignup = {
   phone: string;
   products: string;
   notes?: string;
+  isFood?: boolean;
+  permitUrl?: string;
+  insuranceUrl?: string;
 };
 
 export async function sendEventRegistrationEmails(
@@ -215,24 +218,29 @@ export async function sendEventRegistrationEmails(
   }
   const transport = getTransport();
   const whenWhere = [event.dateLabel, event.location].filter(Boolean).join(" · ");
+  const role = reg.isFood ? "food vendor" : "vendor";
 
   // 1) Organizer notification.
   const organizerMail = transport.sendMail({
     from: `Grove Center Website <${from}>`,
     to,
     replyTo: `${reg.contactName} <${reg.email}>`,
-    subject: `New ${event.name} vendor registration — ${reg.businessName}`,
+    subject: `New ${event.name} ${reg.isFood ? "FOOD " : ""}vendor registration — ${reg.businessName}`,
     text: [
-      `New vendor registration for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}:`,
+      `New ${role} registration for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}:`,
       "",
-      `Business: ${reg.businessName}`,
-      `Contact:  ${reg.contactName}`,
-      `Email:    ${reg.email}`,
-      `Phone:    ${reg.phone}`,
-      `Offering: ${reg.products}`,
-      reg.notes ? `Notes:    ${reg.notes}` : null,
+      `Business:  ${reg.businessName}`,
+      `Contact:   ${reg.contactName}`,
+      `Email:     ${reg.email}`,
+      `Phone:     ${reg.phone}`,
+      `${reg.isFood ? "Serving:  " : "Offering: "}${reg.products}`,
+      reg.isFood && reg.permitUrl ? `Permit:    ${reg.permitUrl}` : null,
+      reg.isFood && reg.insuranceUrl ? `Insurance: ${reg.insuranceUrl}` : null,
+      reg.notes ? `Notes:     ${reg.notes}` : null,
       "",
-      "Follow up to confirm the space. This registration is also on the admin registrations page for this event.",
+      reg.isFood
+        ? "Follow up to confirm the space. The permit + insurance links above are private and expire in ~7 days — they're also always available on the admin registrations page."
+        : "Follow up to confirm the space. This registration is also on the admin registrations page for this event.",
     ]
       .filter((l) => l !== null)
       .join("\n"),
@@ -242,13 +250,19 @@ export async function sendEventRegistrationEmails(
   const vendorMail = transport.sendMail({
     from: `Historic Grove Center <${from}>`,
     to: `${reg.contactName} <${reg.email}>`,
-    subject: `We received your ${event.name} vendor registration`,
+    subject: `We received your ${event.name} ${role} registration`,
     text: [
       `Hi ${reg.contactName},`,
       "",
-      `Thanks for registering ${reg.businessName} as a vendor for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}.`,
+      `Thanks for registering ${reg.businessName} as a ${role} for ${event.name}${whenWhere ? ` (${whenWhere})` : ""}.`,
       "",
       "This is a request to reserve a space — it isn't confirmed yet. Someone from the Grove Center will be in touch to confirm the details.",
+      ...(reg.isFood
+        ? [
+            "",
+            "We received your food permit and certificate of insurance with your registration — thank you. If anything needs updating, just reply to this email.",
+          ]
+        : []),
       "",
       "Questions? Just reply to this email.",
       "",

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitEventRegistration } from "@/app/actions/event-registration";
 import { initialVendorState } from "@/app/actions/vendor-state";
+import DocUpload from "@/components/DocUpload";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -13,7 +14,7 @@ function Err({ msg }: { msg?: string }) {
   return <span className="mt-1 block text-xs text-brick-dark">{msg}</span>;
 }
 
-function SubmitButton() {
+function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -21,16 +22,25 @@ function SubmitButton() {
       disabled={pending}
       className="w-full rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending ? "Submitting…" : "Submit registration"}
+      {pending ? "Submitting…" : label}
     </button>
   );
 }
 
 /**
- * Generic public vendor-registration form for any event with sign-ups open.
- * The `eventSlug` is submitted as a hidden field and re-validated server-side.
+ * Generic public registration form for any event with sign-ups open.
+ * `variant` picks the vendor or food-truck flavor; food adds required permit /
+ * insurance uploads. The `eventSlug` is submitted hidden and re-validated
+ * server-side.
  */
-export default function EventRegistrationForm({ eventSlug }: { eventSlug: string }) {
+export default function EventRegistrationForm({
+  eventSlug,
+  variant = "vendor",
+}: {
+  eventSlug: string;
+  variant?: "vendor" | "food";
+}) {
+  const isFood = variant === "food";
   const [state, formAction] = useActionState(
     submitEventRegistration,
     initialVendorState,
@@ -50,9 +60,12 @@ export default function EventRegistrationForm({ eventSlug }: { eventSlug: string
   return (
     <form className="space-y-4" action={formAction}>
       <input type="hidden" name="eventSlug" value={eventSlug} />
+      <input type="hidden" name="vendorType" value={variant} />
 
       <label className="block text-sm">
-        <span className="font-medium text-foreground">Business / booth name</span>
+        <span className="font-medium text-foreground">
+          {isFood ? "Food business / truck name" : "Business / booth name"}
+        </span>
         <input type="text" name="businessName" required className={inputClass} />
         <Err msg={state.fieldErrors?.businessName} />
       </label>
@@ -78,13 +91,17 @@ export default function EventRegistrationForm({ eventSlug }: { eventSlug: string
 
       <label className="block text-sm">
         <span className="font-medium text-foreground">
-          What will you be offering?
+          {isFood ? "What will you be serving?" : "What will you be offering?"}
         </span>
         <textarea
           name="products"
           rows={3}
           required
-          placeholder="Tell us about your goods, services, or activity…"
+          placeholder={
+            isFood
+              ? "e.g. wood-fired pizza, tacos, kettle corn, lemonade…"
+              : "Tell us about your goods, services, or activity…"
+          }
           className={inputClass}
         />
         <Err msg={state.fieldErrors?.products} />
@@ -102,6 +119,23 @@ export default function EventRegistrationForm({ eventSlug }: { eventSlug: string
         />
       </label>
 
+      {isFood && (
+        <div className="space-y-4 rounded-lg border border-brass/40 bg-brass/5 p-4">
+          <p className="text-sm font-medium text-foreground">
+            Food vendors must be permitted &amp; insured — upload both here (PDF,
+            JPG, or PNG).
+          </p>
+          <div>
+            <DocUpload name="permitDocKey" label="Food-service permit" />
+            <Err msg={state.fieldErrors?.permit} />
+          </div>
+          <div>
+            <DocUpload name="insuranceDocKey" label="Certificate of liability insurance" />
+            <Err msg={state.fieldErrors?.insurance} />
+          </div>
+        </div>
+      )}
+
       {/* Honeypot */}
       <input
         type="text"
@@ -115,7 +149,7 @@ export default function EventRegistrationForm({ eventSlug }: { eventSlug: string
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" name="agree" className="mt-1" />
         <span className="text-foreground/80">
-          I understand that submitting this form requests a vendor space pending
+          I understand that submitting this form requests a space pending
           confirmation from the Grove Center, and that spaces may be limited.
         </span>
       </label>
@@ -127,7 +161,7 @@ export default function EventRegistrationForm({ eventSlug }: { eventSlug: string
         </p>
       )}
 
-      <SubmitButton />
+      <SubmitButton label={isFood ? "Register as a food vendor" : "Submit registration"} />
     </form>
   );
 }
