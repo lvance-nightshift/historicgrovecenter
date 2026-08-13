@@ -3,7 +3,7 @@ import Image from "next/image";
 import EventCard from "@/components/EventCard";
 import MerchantCard from "@/components/MerchantCard";
 import { upcomingEvents } from "@/lib/events";
-import { merchants } from "@/lib/merchants";
+import { getMerchants } from "@/lib/merchants-db";
 import { site } from "@/lib/site";
 import { getSiteMedia } from "@/lib/media";
 
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const featuredEvents = upcomingEvents().slice(0, 3);
-  const featuredMerchants = merchants.slice(0, 3);
+  const featuredMerchants = (await getMerchants()).slice(0, 3);
   const hero = await getSiteMedia("home_hero");
 
   return (

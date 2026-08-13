@@ -12,7 +12,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "node --env-file=.env.local src/db/seed.mjs",
-    "db:seed:pumpkin": "node --env-file=.env.local src/db/seed-pumpkin-fest.mjs"
+    "db:seed:pumpkin": "node --env-file=.env.local src/db/seed-pumpkin-fest.mjs",
+    "db:seed:merchants": "node --env-file=.env.local src/db/seed-merchants.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",

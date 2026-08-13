@@ -2,11 +2,15 @@
 
 import { useMemo, useState } from "react";
 import MerchantCard from "@/components/MerchantCard";
-import { CATEGORIES, merchants, type MerchantCategory } from "@/lib/merchants";
+import { CATEGORIES, type Merchant, type MerchantCategory } from "@/lib/merchants";
 
 type Filter = MerchantCategory | "All";
 
-export default function MerchantDirectory() {
+export default function MerchantDirectory({
+  merchants,
+}: {
+  merchants: Merchant[];
+}) {
   const [filter, setFilter] = useState<Filter>("All");
 
   const filters: Filter[] = ["All", ...CATEGORIES];
@@ -16,7 +20,7 @@ export default function MerchantDirectory() {
       filter === "All"
         ? merchants
         : merchants.filter((m) => m.category === filter),
-    [filter],
+    [filter, merchants],
   );
 
   return (
@@ -49,7 +53,11 @@ export default function MerchantDirectory() {
       </div>
 
       {visible.length === 0 && (
-        <p className="mt-8 text-muted">No merchants in this category yet.</p>
+        <p className="mt-8 text-muted">
+          {merchants.length === 0
+            ? "Our merchant directory is coming soon."
+            : "No merchants in this category yet."}
+        </p>
       )}
     </div>
   );

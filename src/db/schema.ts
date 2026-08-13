@@ -115,6 +115,11 @@ export const companies = pgTable("companies", {
   logoMediaId: integer("logo_media_id").references(() => media.id, {
     onDelete: "set null",
   }),
+  // Public directory category (Dining, Shopping, Services, …). See CATEGORIES
+  // in src/lib/merchants.ts.
+  category: varchar("category", { length: 64 }),
+  // { facebook, instagram, … } — public social links shown on the merchant page.
+  socialLinks: jsonb("social_links"),
   published: boolean("published").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
