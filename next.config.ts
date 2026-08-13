@@ -29,6 +29,19 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: r2RemotePatterns(),
   },
+  /*
+   * Forgiving aliases for the printed Pumpkin Fest flyer URL — near-misses
+   * still land on /pumpkin-fest. These run before the coming-soon proxy, and
+   * the target is exempt, so they resolve even while the rest of the site is
+   * gated. Temporary (307) so we can repoint freely if a URL ever changes.
+   */
+  async redirects() {
+    return [
+      { source: "/pumpkinfest", destination: "/pumpkin-fest", permanent: false },
+      { source: "/pumpkin", destination: "/pumpkin-fest", permanent: false },
+      { source: "/vendors", destination: "/pumpkin-fest", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;
