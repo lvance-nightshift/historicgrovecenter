@@ -15,6 +15,7 @@ import sanitizeHtml from "sanitize-html";
 import { getActor, canManageCompany } from "@/lib/auth/authorize";
 import { GALLERY_LIMIT } from "@/lib/account";
 import { normalizeCategories } from "@/lib/merchants";
+import { getCategoryNames } from "@/lib/categories";
 import { normalizeWeekHours, type WeekHours } from "@/lib/hours";
 
 async function assertCanManage(companyId: number) {
@@ -95,6 +96,11 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
   const name = input.name.trim();
   if (!name) throw new Error("Business name is required.");
 
+  const validCategories = new Set(await getCategoryNames());
+  const categories = normalizeCategories(input.categories).filter((c) =>
+    validCategories.has(c),
+  );
+
   const facebook = url(input.facebook);
   const instagram = url(input.instagram);
   const socialLinks =
@@ -106,7 +112,7 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
     .update(companies)
     .set({
       name,
-      categories: normalizeCategories(input.categories),
+      categories,
       tagline: clean(input.tagline),
       description: richText(input.description),
       hours: clean(input.hours),

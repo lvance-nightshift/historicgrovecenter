@@ -16,7 +16,10 @@ import {
   companyMemberships,
   roleAssignments,
   mediaAttachments,
+  merchantCategories,
 } from "@/db/schema";
+import { isNotNull } from "drizzle-orm";
+import { normalizeCategories } from "@/lib/merchants";
 import { getActor, isAdmin, type RoleScope } from "@/lib/auth/authorize";
 import {
   setSiteMedia,
@@ -294,4 +297,72 @@ export async function deleteCompany(companyId: number): Promise<void> {
   revalidatePath("/admin/companies");
   revalidatePath("/merchants");
   revalidatePath("/");
+}
+
+/* ---------------- Merchant categories (editable master list) ---------------- */
+
+// Rewrite every company's categories array on rename (newName) or delete (null).
+async function cascadeCategory(oldName: string, newName: string | null) {
+  const db = getDb();
+  const rows = await db
+    .select({ id: companies.id, categories: companies.categories })
+    .from(companies)
+    .where(isNotNull(companies.categories));
+  for (const row of rows) {
+    const cats = normalizeCategories(row.categories);
+    if (!cats.includes(oldName)) continue;
+    let next = cats.filter((c) => c !== oldName);
+    if (newName && !next.includes(newName)) next = [...next, newName];
+    await db
+      .update(companies)
+      .set({ categories: next, updatedAt: new Date() })
+      .where(eq(companies.id, row.id));
+  }
+}
+
+function revalidateCategoryConsumers() {
+  revalidatePath("/admin/categories");
+  revalidatePath("/merchants");
+  revalidatePath("/");
+}
+
+export async function addMerchantCategory(name: string): Promise<void> {
+  await assertAdmin();
+  const clean = name.trim();
+  if (!clean) throw new Error("Category name is required.");
+  const db = getDb();
+  const existing = await db.select({ id: merchantCategories.id }).from(merchantCategories);
+  await db
+    .insert(merchantCategories)
+    .values({ name: clean, sortOrder: existing.length })
+    .onConflictDoNothing();
+  revalidateCategoryConsumers();
+}
+
+export async function renameMerchantCategory(id: number, name: string): Promise<void> {
+  await assertAdmin();
+  const clean = name.trim();
+  if (!clean) throw new Error("Category name is required.");
+  const db = getDb();
+  const [row] = await db
+    .select({ name: merchantCategories.name })
+    .from(merchantCategories)
+    .where(eq(merchantCategories.id, id));
+  if (!row || row.name === clean) return;
+  await db.update(merchantCategories).set({ name: clean }).where(eq(merchantCategories.id, id));
+  await cascadeCategory(row.name, clean);
+  revalidateCategoryConsumers();
+}
+
+export async function deleteMerchantCategory(id: number): Promise<void> {
+  await assertAdmin();
+  const db = getDb();
+  const [row] = await db
+    .select({ name: merchantCategories.name })
+    .from(merchantCategories)
+    .where(eq(merchantCategories.id, id));
+  if (!row) return;
+  await db.delete(merchantCategories).where(eq(merchantCategories.id, id));
+  await cascadeCategory(row.name, null);
+  revalidateCategoryConsumers();
 }

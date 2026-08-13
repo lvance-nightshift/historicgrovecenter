@@ -7,6 +7,7 @@ import { companyKinds, companyKindAssignments } from "@/db/schema";
 import { getActor } from "@/lib/auth/authorize";
 import { getEditableCompany } from "@/lib/account";
 import { getCompanyEvents } from "@/lib/events-db";
+import { getCategoryNames } from "@/lib/categories";
 import MerchantEditForm from "@/components/account/MerchantEditForm";
 import MerchantEventsManager from "@/components/account/MerchantEventsManager";
 import AdminCompanyControls from "@/components/admin/AdminCompanyControls";
@@ -27,8 +28,9 @@ export default async function AdminCompanyEditPage({ params }: Params) {
   if (!company) notFound();
 
   const db = getDb();
-  const [events, allKinds, currentKinds] = await Promise.all([
+  const [events, categoryOptions, allKinds, currentKinds] = await Promise.all([
     getCompanyEvents(companyId),
+    getCategoryNames(),
     db
       .select({ id: companyKinds.id, label: companyKinds.label })
       .from(companyKinds)
@@ -66,7 +68,7 @@ export default async function AdminCompanyEditPage({ params }: Params) {
       </div>
 
       <div className="mt-8">
-        <MerchantEditForm company={company} />
+        <MerchantEditForm company={company} categoryOptions={categoryOptions} />
       </div>
 
       <section className="mt-14 border-t border-border pt-10">

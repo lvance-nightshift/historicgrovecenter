@@ -15,7 +15,6 @@ const RichTextEditor = dynamic(
     ),
   },
 );
-import { CATEGORIES } from "@/lib/merchants";
 import HoursEditor from "@/components/account/HoursEditor";
 import MerchantMediaManager from "@/components/account/MerchantMediaManager";
 import type { WeekHours } from "@/lib/hours";
@@ -26,7 +25,13 @@ const input =
 const label = "block text-sm";
 const labelText = "font-medium text-foreground";
 
-export default function MerchantEditForm({ company }: { company: EditableCompany }) {
+export default function MerchantEditForm({
+  company,
+  categoryOptions,
+}: {
+  company: EditableCompany;
+  categoryOptions: string[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -100,7 +105,7 @@ export default function MerchantEditForm({ company }: { company: EditableCompany
             Categories <span className="text-muted">(choose any that fit)</span>
           </span>
           <div className="mt-1 flex flex-wrap gap-2">
-            {CATEGORIES.map((c) => {
+            {categoryOptions.map((c) => {
               const on = categories.includes(c);
               return (
                 <button

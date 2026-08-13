@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { getActor } from "@/lib/auth/authorize";
 import { getEditableCompany } from "@/lib/account";
 import { getCompanyEvents } from "@/lib/events-db";
+import { getCategoryNames } from "@/lib/categories";
 import MerchantEditForm from "@/components/account/MerchantEditForm";
 import MerchantEventsManager from "@/components/account/MerchantEventsManager";
 
@@ -24,7 +25,10 @@ export default async function EditBusinessPage({ params }: Params) {
   const company = await getEditableCompany(actor, companyId);
   if (!company) notFound();
 
-  const events = await getCompanyEvents(companyId);
+  const [events, categoryOptions] = await Promise.all([
+    getCompanyEvents(companyId),
+    getCategoryNames(),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
@@ -49,7 +53,7 @@ export default async function EditBusinessPage({ params }: Params) {
       </p>
 
       <div className="mt-8">
-        <MerchantEditForm company={company} />
+        <MerchantEditForm company={company} categoryOptions={categoryOptions} />
       </div>
 
       <section className="mt-14 border-t border-border pt-10">

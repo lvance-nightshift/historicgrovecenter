@@ -36,7 +36,15 @@ export default async function CompaniesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <h1 className="font-serif text-3xl font-semibold text-grove">Companies</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-serif text-3xl font-semibold text-grove">Companies</h1>
+        <Link
+          href="/admin/categories"
+          className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-grove hover:border-grove/50"
+        >
+          Manage categories →
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-muted">
         {rows.length} {rows.length === 1 ? "company" : "companies"} — merchants, vendors, food trucks, bands, sponsors.
       </p>

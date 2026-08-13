@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import MerchantDirectory from "@/components/MerchantDirectory";
 import PageHero from "@/components/PageHero";
 import { getMerchants } from "@/lib/merchants-db";
+import { getCategoryNames } from "@/lib/categories";
 
 export const metadata: Metadata = {
   title: "Merchants",
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function MerchantsPage() {
-  const merchants = await getMerchants();
+  const [merchants, categories] = await Promise.all([
+    getMerchants(),
+    getCategoryNames(),
+  ]);
   return (
     <>
       <PageHero
@@ -22,7 +26,7 @@ export default async function MerchantsPage() {
       />
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <MerchantDirectory merchants={merchants} />
+        <MerchantDirectory merchants={merchants} categories={categories} />
       </section>
 
       {/* Join CTA */}

@@ -2,18 +2,20 @@
 
 import { useMemo, useState } from "react";
 import MerchantCard from "@/components/MerchantCard";
-import { CATEGORIES, type Merchant, type MerchantCategory } from "@/lib/merchants";
+import type { Merchant } from "@/lib/merchants";
 
-type Filter = MerchantCategory | "All";
+type Filter = string;
 
 export default function MerchantDirectory({
   merchants,
+  categories,
 }: {
   merchants: Merchant[];
+  categories: string[];
 }) {
   const [filter, setFilter] = useState<Filter>("All");
 
-  const filters: Filter[] = ["All", ...CATEGORIES];
+  const filters: Filter[] = ["All", ...categories];
 
   const visible = useMemo(
     () =>
