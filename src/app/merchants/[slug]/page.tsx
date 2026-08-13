@@ -3,8 +3,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import { getMerchantBySlug } from "@/lib/merchants-db";
+import { getPublicEventsForCompanySlug } from "@/lib/events-db";
 import { DAYS, formatDay, hasWeekHours } from "@/lib/hours";
 import MerchantGallery from "@/components/MerchantGallery";
+
+function eventWhen(iso: string | null): string {
+  if (!iso) return "Date to be announced";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +43,7 @@ export default async function MerchantPage({ params }: Params) {
   const m = await getMerchantBySlug(slug);
   if (!m) notFound();
 
+  const events = await getPublicEventsForCompanySlug(slug);
   const hasContact = m.phone || m.website || m.address;
   const hasSocial = m.facebook || m.instagram;
 
@@ -56,6 +71,34 @@ export default async function MerchantPage({ params }: Params) {
               />
             ) : (
               <p className="text-muted">More about {m.name} coming soon.</p>
+            )}
+
+            {events.length > 0 && (
+              <div className="mt-10">
+                <h2 className="font-serif text-xl font-semibold text-grove">
+                  Upcoming events
+                </h2>
+                <ul className="mt-4 space-y-4">
+                  {events.map((e) => (
+                    <li key={e.id} className="rounded-xl border border-border bg-surface p-5">
+                      <p className="text-sm font-semibold text-brick-dark">
+                        {eventWhen(e.startAt)}
+                      </p>
+                      <p className="mt-1 font-serif text-lg font-semibold text-foreground">
+                        {e.title}
+                      </p>
+                      {e.location && (
+                        <p className="text-sm text-muted">{e.location}</p>
+                      )}
+                      {e.description && (
+                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/85">
+                          {e.description}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 
