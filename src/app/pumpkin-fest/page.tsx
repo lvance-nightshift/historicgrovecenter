@@ -15,7 +15,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
       <dt className="w-40 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">
         {label}
       </dt>
-      <dd className="text-sm text-foreground">{children}</dd>
+      <dd className="min-w-0 break-words text-sm text-foreground">{children}</dd>
     </div>
   );
 }
@@ -100,7 +100,7 @@ export default function PumpkinFestPage() {
                   {PF.contact.name}
                   <br />
                   <a
-                    className="text-grove underline decoration-brass-light/60 underline-offset-2 hover:text-grove-dark"
+                    className="break-all text-grove underline decoration-brass-light/60 underline-offset-2 hover:text-grove-dark"
                     href={`mailto:${PF.contact.email}`}
                   >
                     {PF.contact.email}
