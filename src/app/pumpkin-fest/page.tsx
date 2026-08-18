@@ -125,50 +125,6 @@ export default function PumpkinFestPage() {
           </aside>
         </div>
 
-        {/* Succulent Pumpkin Workshop — per-session Square registration */}
-        <section
-          id="workshop"
-          className="mx-auto mt-14 max-w-2xl scroll-mt-6 overflow-hidden rounded-2xl border border-brass/40 bg-gradient-to-br from-brass/10 via-surface to-brick/10 p-6 shadow-sm sm:p-8"
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brick">
-            🎃 Also that day
-          </p>
-          <h2 className="mt-2 font-serif text-2xl font-semibold text-grove">
-            {PF.workshop.title}
-          </h2>
-          <p className="mt-1 text-sm font-medium text-brick-dark">
-            with {PF.workshop.presenter}
-          </p>
-          <p className="mt-3 text-sm text-foreground/85">{PF.workshop.blurb}</p>
-          <p className="mt-3 text-sm font-medium text-foreground">
-            {PF.workshop.priceLabel} · {PF.workshop.slotsLabel}. Choose a session to register:
-          </p>
-          <div className="mt-4 space-y-2">
-            {PF.workshop.sessions.map((s) => (
-              <div
-                key={s.label}
-                className="flex flex-col gap-2 rounded-lg border border-border bg-background/60 p-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="text-sm font-medium text-foreground">{s.label}</span>
-                {s.registerUrl ? (
-                  <a
-                    href={s.registerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 rounded-full bg-grove px-5 py-2 text-center text-sm font-semibold text-background transition-colors hover:bg-grove-dark"
-                  >
-                    Register — {PF.workshop.priceLabel} ↗
-                  </a>
-                ) : (
-                  <span className="shrink-0 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted">
-                    Coming soon
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Registration */}
         <section id="vendor-registration" className="mx-auto mt-14 max-w-2xl scroll-mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
           <h2 className="font-serif text-2xl font-semibold text-grove">

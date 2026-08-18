@@ -59,6 +59,7 @@ export const PUMPKIN_FEST = {
   // fest. Registration/payment is a per-session Square link (Friends of the
   // Grove account). A session with an empty `registerUrl` shows "coming soon".
   workshop: {
+    slug: "succulent-pumpkin-workshop-2026", // matches the events table row
     title: "Succulent Pumpkin Design Workshop",
     presenter: "Brandon Salamacha — Oak Ridge Floral",
     blurb:

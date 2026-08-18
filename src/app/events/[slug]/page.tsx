@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import { getPublicEventBySlug } from "@/lib/events-db";
 import { formatEventDate } from "@/lib/events";
+import { PUMPKIN_FEST as PF } from "@/lib/pumpkin-fest";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,39 @@ export default async function EventDetailPage({ params }: Params) {
             </Link>
           )}
         </div>
+
+        {/* Succulent Pumpkin Workshop — per-session Square registration */}
+        {ev.slug === PF.workshop.slug && (
+          <div className="mt-8 max-w-lg">
+            <p className="text-sm font-medium text-foreground">
+              {PF.workshop.priceLabel} · {PF.workshop.slotsLabel}. Choose a session to register:
+            </p>
+            <div className="mt-3 space-y-2">
+              {PF.workshop.sessions.map((s) => (
+                <div
+                  key={s.label}
+                  className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="text-sm font-medium text-foreground">{s.label}</span>
+                  {s.registerUrl ? (
+                    <a
+                      href={s.registerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 rounded-full bg-grove px-5 py-2 text-center text-sm font-semibold text-background transition-colors hover:bg-grove-dark"
+                    >
+                      Register — {PF.workshop.priceLabel} ↗
+                    </a>
+                  ) : (
+                    <span className="shrink-0 rounded-full border border-border px-4 py-1.5 text-xs font-medium text-muted">
+                      Coming soon
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </>
   );
