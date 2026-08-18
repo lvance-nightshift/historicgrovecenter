@@ -143,6 +143,7 @@ export default function AdminEventsManager({
       foodAppsOpen: form.foodRegistration,
       boothFeeCents: feeToCents(form.boothFee),
       paymentUrl: form.paymentUrl.trim() || null,
+      registrationCount: 0,
     };
   }
 
@@ -160,7 +161,7 @@ export default function AdminEventsManager({
           setItems((prev) => [...prev, rowFrom(id)].sort(sortByStart));
         } else if (typeof editing === "number") {
           await adminUpdateEvent(editing, payload());
-          setItems((prev) => prev.map((it) => (it.id === editing ? rowFrom(editing) : it)).sort(sortByStart));
+          setItems((prev) => prev.map((it) => (it.id === editing ? { ...rowFrom(editing), registrationCount: it.registrationCount } : it)).sort(sortByStart));
         }
         setEditing(null);
       } catch {
@@ -198,9 +199,21 @@ export default function AdminEventsManager({
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              {(e.vendorAppsOpen || e.foodAppsOpen) && (
-                <Link href={`/admin/events/${e.id}/registrations`} className="font-medium text-grove hover:underline">
+              {(e.vendorAppsOpen || e.foodAppsOpen || e.registrationCount > 0) && (
+                <Link
+                  href={`/admin/events/${e.id}/registrations`}
+                  className="inline-flex items-center gap-1.5 font-medium text-grove hover:underline"
+                >
                   Registrations
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      e.registrationCount > 0
+                        ? "bg-brick/15 text-brick-dark"
+                        : "bg-grove/10 text-grove"
+                    }`}
+                  >
+                    {e.registrationCount}
+                  </span>
                 </Link>
               )}
               {e.ticketUrl && (

@@ -8,6 +8,7 @@ import {
   contactSubmissions,
   media,
 } from "@/db/schema";
+import { getRegistrationTotal } from "@/lib/events-db";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +20,13 @@ async function tableCount(
 }
 
 export default async function AdminDashboard() {
-  const [peopleN, companiesN, eventsN, inboxN, mediaN] = await Promise.all([
+  const [peopleN, companiesN, eventsN, inboxN, mediaN, registrationsN] = await Promise.all([
     tableCount(people),
     tableCount(companies),
     tableCount(events),
     tableCount(contactSubmissions),
     tableCount(media),
+    getRegistrationTotal(),
   ]);
 
   const cards: {
@@ -38,6 +40,7 @@ export default async function AdminDashboard() {
     { href: "/admin/media", label: "Media", n: mediaN, hint: "Images & documents" },
     { href: "/admin/site", label: "Site", hint: "Hero image, colors & themes" },
     { href: "/admin/events", label: "Events", n: eventsN, hint: "Association & business events" },
+    { href: "/admin/registrations", label: "Registrations", n: registrationsN, hint: "Vendor & food-truck sign-ups" },
     { href: "/admin", label: "Inbox", n: inboxN, hint: "Contact submissions" },
   ];
 

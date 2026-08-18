@@ -7,7 +7,7 @@
  */
 
 import "server-only";
-import { and, asc, desc, eq, gte, isNotNull, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { companies, events, eventParticipations } from "@/db/schema";
 import type { PublicEvent } from "@/lib/events";
@@ -224,6 +224,7 @@ export type AdminEvent = {
   foodAppsOpen: boolean;
   boothFeeCents: number | null;
   paymentUrl: string | null;
+  registrationCount: number;
 };
 
 /** Every event (association + business) for the admin events manager. */
@@ -246,6 +247,7 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         foodAppsOpen: events.foodAppsOpen,
         boothFeeCents: events.boothFeeCents,
         paymentUrl: events.paymentUrl,
+        registrationCount: sql<number>`(SELECT count(*)::int FROM ${eventParticipations} ep WHERE ep.event_id = ${events.id})`,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
@@ -258,6 +260,58 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
   } catch (err) {
     console.error("getAllEventsAdmin failed", err);
     return [];
+  }
+}
+
+export type RegistrationSummary = {
+  eventId: number;
+  eventTitle: string;
+  startAt: string | null;
+  total: number;
+  pending: number;
+  unpaid: number;
+};
+
+/** Per-event registration counts (events that have ≥1 registration), busiest first. */
+export async function getRegistrationSummary(): Promise<RegistrationSummary[]> {
+  try {
+    const rows = await getDb()
+      .select({
+        eventId: eventParticipations.eventId,
+        eventTitle: events.title,
+        startAt: events.startAt,
+        total: sql<number>`count(*)::int`,
+        pending: sql<number>`count(*) filter (where ${eventParticipations.status} = 'pending')::int`,
+        unpaid: sql<number>`count(*) filter (where ${eventParticipations.paymentStatus} is distinct from 'paid')::int`,
+      })
+      .from(eventParticipations)
+      .innerJoin(events, eq(events.id, eventParticipations.eventId))
+      .groupBy(eventParticipations.eventId, events.title, events.startAt)
+      .orderBy(desc(sql`count(*)`));
+    return rows.map((r) => ({
+      eventId: r.eventId,
+      eventTitle: r.eventTitle,
+      startAt: r.startAt ? r.startAt.toISOString() : null,
+      total: r.total,
+      pending: r.pending,
+      unpaid: r.unpaid,
+    }));
+  } catch (err) {
+    console.error("getRegistrationSummary failed", err);
+    return [];
+  }
+}
+
+/** Total registrations across all events (for the dashboard card). */
+export async function getRegistrationTotal(): Promise<number> {
+  try {
+    const [row] = await getDb()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(eventParticipations);
+    return row?.n ?? 0;
+  } catch (err) {
+    console.error("getRegistrationTotal failed", err);
+    return 0;
   }
 }
 
