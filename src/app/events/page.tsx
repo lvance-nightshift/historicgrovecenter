@@ -19,7 +19,7 @@ export default async function EventsPage() {
       <PageHero
         eyebrow="Calendar"
         title="Events at the Grove Center"
-        subtitle="There's almost always something happening in the courtyard. Here's what's on."
+        subtitle="There's almost always something happening at the Grove Center. Here's what's on."
       />
 
       <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">

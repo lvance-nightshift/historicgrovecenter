@@ -16,9 +16,13 @@ export default async function Home() {
   const featuredEvents = (await getPublicEvents()).upcoming.slice(0, 3);
   const featuredMerchants = (await getMerchants()).slice(0, 3);
   const hero = await getSiteMedia("home_hero");
-  // Feature the Pumpkin Fest vendor call while the fest is still upcoming;
-  // afterward the homepage falls back to the three "pillars" blurb.
-  const pumpkinUpcoming = Date.now() < new Date(PF.endAtISO).getTime();
+  // Feature the October events while they're still upcoming; afterward the
+  // homepage falls back to the three "pillars" blurb.
+  const now = Date.now();
+  const HARVEST_TICKETS =
+    "https://www.eventbrite.com/e/oak-ridge-harvest-table-tickets-1995108133133";
+  const harvestUpcoming = now < new Date("2026-10-17T04:00:00.000Z").getTime();
+  const pumpkinUpcoming = now < new Date(PF.endAtISO).getTime();
 
   return (
     <>
@@ -82,43 +86,28 @@ export default async function Home() {
         )}
       </section>
 
-      {/* Pumpkin Fest vendor call (while upcoming) — otherwise the three pillars */}
-      {pumpkinUpcoming ? (
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <div className="overflow-hidden rounded-2xl border border-brass/40 bg-gradient-to-br from-brass/15 via-surface to-brick/10 p-8 shadow-sm sm:p-12">
-            <div className="flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brick">
-                  🎃 {PF.dateLabel} · {PF.hoursLabel}
-                </p>
-                <h2 className="mt-3 font-serif text-3xl font-semibold text-grove sm:text-4xl">
-                  Fall Pumpkin Fest
-                </h2>
-                <p className="mt-3 leading-relaxed text-muted">
-                  Music, pumpkins, a petting zoo &amp; a pet costume contest — a
-                  free community day benefiting SARG Inc., Local Arts &amp; the
-                  Historic Grove Theater. Artisan, craft &amp; food vendors welcome,
-                  too.
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-3">
-                <a
-                  href={PF.eventbriteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-grove px-7 py-3.5 text-center font-semibold text-background shadow-sm transition-colors hover:bg-grove-dark"
-                >
-                  Register to attend (free) ↗
-                </a>
-                <Link
-                  href="/pumpkin-fest"
-                  className="rounded-full border border-grove/40 px-7 py-3.5 text-center font-semibold text-grove transition-colors hover:bg-grove/10"
-                >
-                  Become a vendor →
-                </Link>
-              </div>
-            </div>
-          </div>
+      {/* Featured October events (while upcoming) — otherwise the three pillars */}
+      {harvestUpcoming || pumpkinUpcoming ? (
+        <section className="mx-auto max-w-6xl space-y-4 px-4 py-10 sm:px-6">
+          {harvestUpcoming && (
+            <FeaturedBanner
+              eyebrow="🍂 Friday, October 16 · 5 PM"
+              title="Oak Ridge Harvest Table"
+              blurb="A black-tie dinner & mural ribbon-cutting celebrating the arts — benefiting the local arts community."
+              actions={[{ href: HARVEST_TICKETS, label: "Get tickets ↗", external: true, primary: true }]}
+            />
+          )}
+          {pumpkinUpcoming && (
+            <FeaturedBanner
+              eyebrow={`🎃 ${PF.dateLabel} · ${PF.hoursLabel}`}
+              title="Fall Pumpkin Fest"
+              blurb="A free community day — music, pumpkins, a petting zoo & pet costume contest. Vendors welcome, too."
+              actions={[
+                { href: PF.eventbriteUrl, label: "Register (free) ↗", external: true, primary: true },
+                { href: "/pumpkin-fest", label: "Become a vendor →" },
+              ]}
+            />
+          )}
         </section>
       ) : (
         <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
@@ -210,5 +199,57 @@ export default async function Home() {
         </div>
       </section>
     </>
+  );
+}
+
+type BannerAction = { href: string; label: string; external?: boolean; primary?: boolean };
+
+/** Compact promo banner for a featured event. */
+function FeaturedBanner({
+  eyebrow,
+  title,
+  blurb,
+  actions,
+}: {
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  actions: BannerAction[];
+}) {
+  const cls = (primary?: boolean) =>
+    primary
+      ? "rounded-full bg-grove px-5 py-2.5 text-center text-sm font-semibold text-background shadow-sm transition-colors hover:bg-grove-dark"
+      : "rounded-full border border-grove/40 px-5 py-2.5 text-center text-sm font-semibold text-grove transition-colors hover:bg-grove/10";
+  return (
+    <div className="overflow-hidden rounded-xl border border-brass/40 bg-gradient-to-br from-brass/12 via-surface to-brick/10 p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brick">
+            {eyebrow}
+          </p>
+          <h3 className="mt-1 font-serif text-2xl font-semibold text-grove">{title}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{blurb}</p>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-3">
+          {actions.map((a) =>
+            a.external ? (
+              <a
+                key={a.label}
+                href={a.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cls(a.primary)}
+              >
+                {a.label}
+              </a>
+            ) : (
+              <Link key={a.label} href={a.href} className={cls(a.primary)}>
+                {a.label}
+              </Link>
+            ),
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
