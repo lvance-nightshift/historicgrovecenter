@@ -64,8 +64,7 @@ export default function ComingSoonPage() {
 
         <p className="mt-8 max-w-md text-lg leading-relaxed text-background/85">
           A new home for Oak Ridge&apos;s original neighborhood shopping center
-          is on the way. Our merchants, events, and history — all in one place,
-          very soon.
+          is on the way. Our merchants and events — all in one place, very soon.
         </p>
 
         <p className="mt-10 text-sm uppercase tracking-[0.2em] text-brass-light">

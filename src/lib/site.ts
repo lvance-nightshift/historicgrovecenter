@@ -24,7 +24,7 @@ export const site = {
 
 export const nav = [
   { href: "/", label: "Home" },
-  { href: "/history", label: "History" },
+  // History intentionally hidden until accurate copy is provided.
   { href: "/events", label: "Events" },
   { href: "/merchants", label: "Merchants" },
   { href: "/visit", label: "Visit" },

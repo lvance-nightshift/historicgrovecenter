@@ -96,8 +96,9 @@ export default async function Home() {
                 </h2>
                 <p className="mt-3 leading-relaxed text-muted">
                   Artisan, craft &amp; food vendors welcome — {PF.boothFeeLabel}.{" "}
-                  {PF.spotsLabel} A high-traffic community day benefiting SARG, the
-                  Historic Grove Theater &amp; local arts.
+                  {PF.spotsLabel}{" "}
+                  A high-traffic community day benefiting SARG, the Historic Grove
+                  Theater &amp; local arts.
                 </p>
               </div>
               <Link
@@ -172,47 +173,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* History teaser */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="grid items-center gap-12 md:grid-cols-2">
-          <div className="relative">
-            {/* Placeholder "photo" block — swap for a real historic image */}
-            <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-border bg-grove/5 text-center">
-              <div className="px-6">
-                <p className="font-serif text-2xl italic text-grove/60">
-                  Historic photo
-                </p>
-                <p className="mt-2 text-sm text-muted">
-                  Add a vintage image of Grove Center here
-                </p>
-              </div>
-            </div>
-            <div className="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-2xl bg-brass/20" />
-          </div>
-          <div>
-            <div className="rule-brass" />
-            <h2 className="mt-4 font-serif text-3xl font-semibold text-grove">
-              A shopping center born of the Secret City
-            </h2>
-            <p className="mt-4 leading-relaxed text-muted">
-              When Oak Ridge rose almost overnight in the 1940s to enrich
-              uranium for the Manhattan Project, its planners built
-              self-contained neighborhoods — each with its own shopping center.
-              Grove Center opened to serve the city&apos;s growing east side,
-              its Grove Theater marquee glowing over a main street of shops,
-              a soda fountain, and a gathering place that outlasted the war
-              that made it.
-            </p>
-            <Link
-              href="/history"
-              className="mt-6 inline-block font-semibold text-grove hover:underline"
-            >
-              Read the full story →
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Featured merchants */}
       <section className="bg-grove-dark text-background">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
@@ -236,33 +196,6 @@ export default async function Home() {
             {featuredMerchants.map((merchant) => (
               <MerchantCard key={merchant.slug} merchant={merchant} />
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="rounded-2xl border border-border bg-surface p-10 text-center shadow-sm sm:p-14">
-          <h2 className="font-serif text-3xl font-semibold text-grove">
-            Come spend an afternoon at the Grove.
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted">
-            Free parking, walkable shops, and something happening most weekends.
-            We&apos;ll leave the marquee on for you.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/visit"
-              className="rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark"
-            >
-              Plan your visit
-            </Link>
-            <Link
-              href="/events"
-              className="rounded-full border border-grove/30 px-6 py-3 font-semibold text-grove transition-colors hover:bg-grove/5"
-            >
-              Browse events
-            </Link>
           </div>
         </div>
       </section>
