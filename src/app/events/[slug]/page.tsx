@@ -46,16 +46,24 @@ export default async function EventDetailPage({ params }: Params) {
         )}
 
         <div className="mt-8 flex flex-wrap gap-3">
-          {ev.ticketUrl && (
-            <a
-              href={ev.ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark"
-            >
-              Get tickets ↗
-            </a>
-          )}
+          {ev.ticketUrl &&
+            (ev.ticketUrl.startsWith("/") ? (
+              <Link
+                href={ev.ticketUrl}
+                className="rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark"
+              >
+                Register →
+              </Link>
+            ) : (
+              <a
+                href={ev.ticketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-grove px-6 py-3 font-semibold text-background transition-colors hover:bg-grove-dark"
+              >
+                Get tickets ↗
+              </a>
+            ))}
           {isVendor && (
             <Link
               href={ev.registerUrl!}

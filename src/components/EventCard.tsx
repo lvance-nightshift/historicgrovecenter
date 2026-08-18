@@ -49,16 +49,24 @@ export default function EventCard({ event }: { event: PublicEvent }) {
         </p>
         {(event.ticketUrl || event.registerUrl) && (
           <div className="relative z-10 mt-3 flex flex-wrap gap-2">
-            {event.ticketUrl && (
-              <a
-                href={event.ticketUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block rounded-full bg-grove px-4 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-grove-dark"
-              >
-                Get tickets ↗
-              </a>
-            )}
+            {event.ticketUrl &&
+              (event.ticketUrl.startsWith("/") ? (
+                <Link
+                  href={event.ticketUrl}
+                  className="inline-block rounded-full bg-grove px-4 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-grove-dark"
+                >
+                  Register →
+                </Link>
+              ) : (
+                <a
+                  href={event.ticketUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block rounded-full bg-grove px-4 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-grove-dark"
+                >
+                  Get tickets ↗
+                </a>
+              ))}
             {event.registerUrl && (
               <Link
                 href={event.registerUrl}
