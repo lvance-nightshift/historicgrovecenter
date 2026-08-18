@@ -26,6 +26,14 @@ export const PUMPKIN_FEST = {
   // Public (attendee) registration — free tickets + kids' pumpkin activity.
   eventbriteUrl:
     "https://www.eventbrite.com/e/fall-pumpkin-fest-at-the-oak-ridge-grove-center-tickets-1996451407904",
+  // Vendors may reserve 1 or 2 spaces. The Square account has no quantity
+  // selector, so Friends of the Grove made a separate fixed-price checkout for
+  // each count — the link already charges the correct total (no "pay twice").
+  maxSpaces: 2,
+  paymentLinkBySpaces: {
+    1: "https://checkout.square.site/merchant/MLQHSGNVPVBN4/checkout/TYI4MW2SZV5FMLA7LUYVM3HW",
+    2: "https://square.link/u/Gixs7pG9",
+  } as Record<number, string>,
   benefiting:
     "SARG Inc. (Shelter Animals Rescue Group), Local Arts, and the Historic Grove Theater",
   contact: {

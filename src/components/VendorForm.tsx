@@ -6,6 +6,7 @@ import { submitVendorRegistration } from "@/app/actions/vendor-registration";
 import { initialVendorState } from "@/app/actions/vendor-state";
 import DocUpload from "@/components/DocUpload";
 import PayButton from "@/components/PayButton";
+import { PUMPKIN_FEST as PF } from "@/lib/pumpkin-fest";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -99,14 +100,14 @@ export default function VendorForm({ variant }: { variant: "craft" | "food" }) {
       <label className="block text-sm">
         <span className="font-medium text-foreground">Spaces</span>
         <select name="spaces" defaultValue="1" className={inputClass}>
-          {[1, 2, 3, 4, 5].map((n) => (
+          {Array.from({ length: PF.maxSpaces }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
               {n} space{n > 1 ? "s" : ""} — ${n * 45}
             </option>
           ))}
         </select>
         <span className="mt-1 block text-xs text-muted">
-          $45 per space. Spaces are limited (30 total).
+          $45 per space, up to {PF.maxSpaces}. Spaces are limited (30 total).
         </span>
       </label>
 

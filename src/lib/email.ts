@@ -108,6 +108,8 @@ export type VendorRegistration = {
   permitUrl?: string;
   insuranceUrl?: string;
   paymentUrl?: string;
+  // true when paymentUrl already charges the exact total (no per-space note).
+  paymentExact?: boolean;
 };
 
 /**
@@ -173,7 +175,7 @@ export async function sendVendorRegistrationEmails(
             "",
             `Pay your booth fee${reg.feeLabel ? ` (${reg.feeLabel})` : ""} here:`,
             reg.paymentUrl,
-            ...(reg.spaces && reg.spaces > 1
+            ...(reg.spaces && reg.spaces > 1 && !reg.paymentExact
               ? ["(The payment page charges per space — please complete it once for each space you reserved.)"]
               : []),
           ]

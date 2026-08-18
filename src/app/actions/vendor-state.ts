@@ -23,7 +23,15 @@ export type VendorState = {
   // On success, when the event has a booth fee + a hosted checkout link: the
   // "Pay booth fee" button to show. `perSpace` notes single-space fee handling
   // for multi-space registrations (the Square link charges one space per run).
-  payment?: { url: string; amountLabel: string; spaces: number; perSpaceLabel: string };
+  payment?: {
+    url: string;
+    amountLabel: string;
+    spaces: number;
+    perSpaceLabel: string;
+    // true when the link already charges the exact total for the chosen space
+    // count (no "run the checkout once per space" note needed).
+    exactAmount?: boolean;
+  };
 };
 
 export const initialVendorState: VendorState = { ok: false, message: "" };

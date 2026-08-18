@@ -22,7 +22,7 @@ export default function PayButton({
         Pay booth fee — {payment.amountLabel} ↗
       </a>
       <p className="mt-3 text-xs text-muted">
-        {payment.spaces > 1
+        {payment.spaces > 1 && !payment.exactAmount
           ? `The payment page charges ${payment.perSpaceLabel} per space — please complete it once for each of your ${payment.spaces} spaces.`
           : "Secure payment is handled by Square. Your space is confirmed once the fee is received."}
       </p>

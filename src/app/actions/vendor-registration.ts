@@ -82,7 +82,8 @@ export async function submitVendorRegistration(
   const insuranceDocKey = String(formData.get("insuranceDocKey") ?? "").trim();
   let spaces = Number(formData.get("spaces") ?? "1");
   if (!Number.isFinite(spaces) || spaces < 1) spaces = 1;
-  if (spaces > 5) spaces = 5;
+  if (spaces > PUMPKIN_FEST.maxSpaces) spaces = PUMPKIN_FEST.maxSpaces;
+  spaces = Math.floor(spaces);
 
   const productsLabel = isFood ? "Tell us what you'll be serving." : "Tell us what you'll be selling.";
   const fieldErrors: VendorState["fieldErrors"] = {};
@@ -181,14 +182,19 @@ export async function submitVendorRegistration(
     }
   }
 
-  // Pay button — Pumpkin Fest always has a booth fee; show it when a hosted
-  // checkout link is configured on the event.
-  const payment = paymentUrl
+  // Pay button — pick the Square checkout that matches the number of spaces
+  // (each link already charges the exact total, so no "pay per space" note).
+  const payLink =
+    PUMPKIN_FEST.paymentLinkBySpaces[spaces] ??
+    PUMPKIN_FEST.paymentLinkBySpaces[1] ??
+    paymentUrl;
+  const payment = payLink
     ? {
-        url: paymentUrl,
+        url: payLink,
         amountLabel: feeLabel,
         spaces,
         perSpaceLabel: dollars(PUMPKIN_FEST.boothFeeCents),
+        exactAmount: true,
       }
     : undefined;
 
@@ -208,7 +214,8 @@ export async function submitVendorRegistration(
           isFood,
           permitUrl: isFood ? await docUrl(permitDocKey) : undefined,
           insuranceUrl: isFood ? await docUrl(insuranceDocKey) : undefined,
-          paymentUrl: paymentUrl ?? undefined,
+          paymentUrl: payLink ?? undefined,
+          paymentExact: true,
         },
         PUMPKIN_FEST.title,
       );
