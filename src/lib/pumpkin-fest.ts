@@ -20,11 +20,14 @@ export const PUMPKIN_FEST = {
   boothFeeLabel: "$45 per vendor space",
   boothFeeCents: 4500,
   spots: 30,
-  spotsLabel: "30 artisan & craft vendor spaces — limited!",
+  spotsLabel: "30 artisan craft vendor spaces — limited!",
   organizer: "Friends of the Grove Theater / Grove Center Merchants",
   sponsors: "Oklo — presenting sponsor",
+  // Public (attendee) registration — free tickets + kids' pumpkin activity.
+  eventbriteUrl:
+    "https://www.eventbrite.com/e/fall-pumpkin-fest-at-the-oak-ridge-grove-center-tickets-1996451407904",
   benefiting:
-    "SARG Inc. (Shelter Animals Rescue Group), the Historic Grove Theater & the local arts",
+    "SARG Inc. (Shelter Animals Rescue Group), Local Arts, and the Historic Grove Theater",
   contact: {
     name: "Shad — Oak Ridge Florist",
     email: "HistoricGroveCenter@gmail.com",
@@ -36,13 +39,13 @@ export const PUMPKIN_FEST = {
   intro:
     "Reserve your spot at the Oak Ridge Historic Grove Center Fall Pumpkin Fest! This beloved community event brings together music, pumpkins, local vendors, a petting zoo, and a pet costume contest for a day of fun for the whole family.",
   benefitBlurb:
-    "The Pumpkin Fest benefits SARG Inc. (Shelter Animals Rescue Group), the Historic Grove Theater, and local arts. Join us in making it the best one yet!",
+    "This year's Pumpkin Fest benefits SARG Inc. (Shelter Animals Rescue Group), Local Arts and the Historic Grove Theater. Join us in making it the best one yet!",
   highlights: [
-    "30 artisan & craft vendor spaces — first come, first served",
+    "30 artisan craft vendor spaces available — first come, first served",
     "$45 per vendor space",
     "Food vendors welcome (Oak Ridge permit + insurance required)",
     "Live music, pumpkins, petting zoo & pet costume contest",
-    "High-foot-traffic community event in the heart of the Grove Center",
+    "High foot-traffic community event in the heart of the Grove Center",
   ],
 } as const;
 

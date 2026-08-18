@@ -89,24 +89,34 @@ export default async function Home() {
             <div className="flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
               <div className="max-w-2xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brick">
-                  🎃 {PF.dateLabel} · Vendor sign-ups open
+                  🎃 {PF.dateLabel} · {PF.hoursLabel}
                 </p>
                 <h2 className="mt-3 font-serif text-3xl font-semibold text-grove sm:text-4xl">
-                  Be a vendor at the Fall Pumpkin Fest
+                  Fall Pumpkin Fest
                 </h2>
                 <p className="mt-3 leading-relaxed text-muted">
-                  Artisan, craft &amp; food vendors welcome — {PF.boothFeeLabel}.{" "}
-                  {PF.spotsLabel}{" "}
-                  A high-traffic community day benefiting SARG, the Historic Grove
-                  Theater &amp; local arts.
+                  Music, pumpkins, a petting zoo &amp; a pet costume contest — a
+                  free community day benefiting SARG Inc., Local Arts &amp; the
+                  Historic Grove Theater. Artisan, craft &amp; food vendors welcome,
+                  too.
                 </p>
               </div>
-              <Link
-                href="/pumpkin-fest"
-                className="shrink-0 rounded-full bg-grove px-7 py-3.5 font-semibold text-background shadow-sm transition-colors hover:bg-grove-dark"
-              >
-                Reserve your space →
-              </Link>
+              <div className="flex shrink-0 flex-col gap-3">
+                <a
+                  href={PF.eventbriteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-grove px-7 py-3.5 text-center font-semibold text-background shadow-sm transition-colors hover:bg-grove-dark"
+                >
+                  Register to attend (free) ↗
+                </a>
+                <Link
+                  href="/pumpkin-fest"
+                  className="rounded-full border border-grove/40 px-7 py-3.5 text-center font-semibold text-grove transition-colors hover:bg-grove/10"
+                >
+                  Become a vendor →
+                </Link>
+              </div>
             </div>
           </div>
         </section>

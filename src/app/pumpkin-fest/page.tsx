@@ -55,6 +55,19 @@ export default function PumpkinFestPage() {
             {PF.dateLabel} · {PF.hoursLabel}
           </p>
           <p className="text-sm text-background/75">{PF.location}</p>
+          <div className="mt-7 flex flex-col items-center gap-2">
+            <a
+              href={PF.eventbriteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-brass px-7 py-3 font-semibold text-grove-dark shadow-sm transition-colors hover:bg-brass-light"
+            >
+              Attending? Register free on Eventbrite ↗
+            </a>
+            <a href="#vendor-registration" className="text-sm text-background/80 underline underline-offset-4 hover:text-background">
+              Want a vendor booth? Sign up below ↓
+            </a>
+          </div>
         </div>
       </header>
 
@@ -113,7 +126,7 @@ export default function PumpkinFestPage() {
         </div>
 
         {/* Registration */}
-        <section className="mx-auto mt-14 max-w-2xl rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+        <section id="vendor-registration" className="mx-auto mt-14 max-w-2xl scroll-mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
           <h2 className="font-serif text-2xl font-semibold text-grove">
             Vendor registration
           </h2>
