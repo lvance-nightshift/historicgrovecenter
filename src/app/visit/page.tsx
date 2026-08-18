@@ -35,7 +35,7 @@ export default async function VisitPage() {
                 <p>{contact.addressLine2}</p>
               </address>
               <p className="mt-3 text-muted">
-                Grove Center sits on Oak Ridge&apos;s east side, with free
+                Grove Center sits in central Oak Ridge, with free
                 surface parking on-site.
               </p>
             </div>

@@ -115,7 +115,7 @@ export default async function Home() {
             {[
               {
                 title: "A living landmark",
-                body: "One of Oak Ridge's four original shopping centers, the Grove Center still centers daily life on the city's east side.",
+                body: "One of Oak Ridge's four original shopping centers, the Grove Center still anchors daily life in the heart of the city.",
               },
               {
                 title: "Independent merchants",

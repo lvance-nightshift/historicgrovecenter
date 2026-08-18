@@ -15,7 +15,7 @@ export const site = {
     line2: "Oak Ridge, TN 37830",
   },
   email: "info@historicgrovecenter.com",
-  phone: "(865) 555-0100",
+  phone: "(865) 482-9251",
   social: {
     facebook: "https://facebook.com",
     instagram: "https://instagram.com",
