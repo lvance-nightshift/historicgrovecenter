@@ -49,6 +49,7 @@ export default function MerchantEditForm({
     description: company.description ?? "",
     hours: company.hours ?? "",
     phone: company.phone ?? "",
+    email: company.email ?? "",
     website: company.website ?? "",
     address: company.address ?? "",
     facebook: company.facebook ?? "",
@@ -181,6 +182,16 @@ export default function MerchantEditForm({
             <input value={f.phone} onChange={set("phone")} className={input} />
           </label>
           <label className={label}>
+            <span className={labelText}>Email</span>
+            <input
+              type="email"
+              value={f.email}
+              onChange={set("email")}
+              placeholder="hello@yourbusiness.com"
+              className={input}
+            />
+          </label>
+          <label className={label}>
             <span className={labelText}>Website</span>
             <input
               value={f.website}
@@ -189,12 +200,11 @@ export default function MerchantEditForm({
               className={input}
             />
           </label>
+          <label className={label}>
+            <span className={labelText}>Address</span>
+            <input value={f.address} onChange={set("address")} className={input} />
+          </label>
         </div>
-
-        <label className={label}>
-          <span className={labelText}>Address</span>
-          <input value={f.address} onChange={set("address")} className={input} />
-        </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className={label}>

@@ -119,6 +119,7 @@ export const companies = pgTable("companies", {
   hours: text("hours"),
   website: text("website"),
   phone: varchar("phone", { length: 40 }),
+  email: varchar("email", { length: 120 }),
   addressLine: text("address_line"),
   logoMediaId: integer("logo_media_id").references(() => media.id, {
     onDelete: "set null",

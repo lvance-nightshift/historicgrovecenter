@@ -43,6 +43,7 @@ export type EditableCompany = {
   description: string | null;
   hours: string | null;
   phone: string | null;
+  email: string | null;
   website: string | null;
   hoursByDay: WeekHours;
   address: string | null;
@@ -161,6 +162,7 @@ export async function getEditableCompany(
     description: row.description,
     hours: row.hours,
     phone: row.phone,
+    email: row.email,
     website: row.website,
     hoursByDay: normalizeWeekHours(row.hoursByDay),
     address: row.addressLine,

@@ -44,7 +44,7 @@ export default async function MerchantPage({ params }: Params) {
   if (!m) notFound();
 
   const events = await getPublicEventsForCompanySlug(slug);
-  const hasContact = m.phone || m.website || m.address;
+  const hasContact = m.phone || m.email || m.website || m.address;
   const hasSocial = m.facebook || m.instagram;
 
   return (
@@ -141,6 +141,16 @@ export default async function MerchantPage({ params }: Params) {
                       <dd>
                         <a href={tel(m.phone)} className="font-medium text-grove hover:underline">
                           {m.phone}
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                  {m.email && (
+                    <div>
+                      <dt className="sr-only">Email</dt>
+                      <dd>
+                        <a href={`mailto:${m.email}`} className="font-medium text-grove hover:underline break-all">
+                          {m.email}
                         </a>
                       </dd>
                     </div>

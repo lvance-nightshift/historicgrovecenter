@@ -53,6 +53,7 @@ export type MerchantListingInput = {
   hours?: string;
   hoursByDay?: WeekHours;
   phone?: string;
+  email?: string;
   website?: string;
   address?: string;
   facebook?: string;
@@ -117,6 +118,7 @@ export async function updateMyCompany(input: MerchantListingInput): Promise<void
       description: richText(input.description),
       hours: clean(input.hours),
       phone: clean(input.phone),
+      email: clean(input.email),
       website: url(input.website),
       addressLine: clean(input.address),
       socialLinks,

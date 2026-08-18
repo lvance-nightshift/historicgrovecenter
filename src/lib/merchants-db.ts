@@ -27,6 +27,7 @@ type Row = {
   tagline: string | null;
   description: string | null;
   phone: string | null;
+  email: string | null;
   website: string | null;
   hours: string | null;
   hoursByDay: unknown;
@@ -51,6 +52,7 @@ function toMerchant(r: Row): Merchant | null {
     tagline: r.tagline ?? undefined,
     description: r.description ?? undefined,
     phone: r.phone ?? undefined,
+    email: r.email ?? undefined,
     website: r.website ?? undefined,
     hours: r.hours ?? undefined,
     hoursByDay: normalizeWeekHours(r.hoursByDay),
@@ -68,6 +70,7 @@ const selection = {
   tagline: companies.tagline,
   description: companies.description,
   phone: companies.phone,
+  email: companies.email,
   website: companies.website,
   hours: companies.hours,
   hoursByDay: companies.hoursByDay,

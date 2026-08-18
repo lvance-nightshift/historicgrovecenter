@@ -46,6 +46,7 @@ export type Merchant = {
   tagline?: string;
   description?: string;
   phone?: string;
+  email?: string;
   website?: string;
   hours?: string; // freeform note (holidays, "by appointment", …)
   hoursByDay?: WeekHours; // structured weekly hours
