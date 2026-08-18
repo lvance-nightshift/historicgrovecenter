@@ -116,14 +116,16 @@ export async function submitVendorRegistration(
 
   // 1) Persist the registration (best-effort).
   let participationId: number | null = null;
+  let paymentUrl: string | null = null;
   if (isDbConfigured()) {
     try {
       const db = getDb();
       const [ev] = await db
-        .select({ id: events.id })
+        .select({ id: events.id, paymentUrl: events.paymentUrl })
         .from(events)
         .where(eq(events.slug, PUMPKIN_FEST.slug));
       if (ev) {
+        paymentUrl = ev.paymentUrl ?? null;
         const personId = await upsertPerson(contactName, email, phone);
         const [dupe] = personId
           ? await db
@@ -179,6 +181,17 @@ export async function submitVendorRegistration(
     }
   }
 
+  // Pay button — Pumpkin Fest always has a booth fee; show it when a hosted
+  // checkout link is configured on the event.
+  const payment = paymentUrl
+    ? {
+        url: paymentUrl,
+        amountLabel: feeLabel,
+        spaces,
+        perSpaceLabel: dollars(PUMPKIN_FEST.boothFeeCents),
+      }
+    : undefined;
+
   // 2) Email organizer + vendor confirmation.
   if (isEmailConfigured()) {
     try {
@@ -195,6 +208,7 @@ export async function submitVendorRegistration(
           isFood,
           permitUrl: isFood ? await docUrl(permitDocKey) : undefined,
           insuranceUrl: isFood ? await docUrl(insuranceDocKey) : undefined,
+          paymentUrl: paymentUrl ?? undefined,
         },
         PUMPKIN_FEST.title,
       );
@@ -215,5 +229,6 @@ export async function submitVendorRegistration(
     message: isFood
       ? "Thanks! Your food-vendor registration and documents have been received. Someone from the Grove Center will follow up to confirm your space and booth fee. Check your email for a confirmation."
       : "Thanks! Your vendor registration has been received. Spaces are limited and first come, first served — someone from the Grove Center will follow up to confirm your booth and booth fee. Check your email for a confirmation.",
+    ...(payment ? { payment } : {}),
   };
 }

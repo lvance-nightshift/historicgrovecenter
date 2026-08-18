@@ -17,6 +17,9 @@ const title = "Fall Pumpkin Fest";
 const startAt = "2026-10-17T14:00:00.000Z"; // 10 a.m. EDT
 const endAt = "2026-10-17T20:00:00.000Z"; // 4 p.m. EDT
 const location = "Historic Grove Center, Oak Ridge, TN";
+// Square hosted checkout (Friends of the Grove) for the $45 booth fee.
+const paymentUrl =
+  "https://checkout.square.site/merchant/MLQHSGNVPVBN4/checkout/TYI4MW2SZV5FMLA7LUYVM3HW";
 const description =
   "Reserve your spot at the Oak Ridge Historic Grove Center Fall Pumpkin Fest! " +
   "This beloved community event brings together music, pumpkins, local vendors, " +
@@ -26,10 +29,10 @@ const description =
 const [row] = await sql`
   INSERT INTO events
     (slug, title, type, start_at, end_at, location, description,
-     published, vendor_apps_open, booth_fee_cents)
+     published, vendor_apps_open, booth_fee_cents, payment_url)
   VALUES
     (${slug}, ${title}, 'association', ${startAt}, ${endAt}, ${location},
-     ${description}, true, true, 4500)
+     ${description}, true, true, 4500, ${paymentUrl})
   ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
     start_at = EXCLUDED.start_at,
@@ -38,6 +41,7 @@ const [row] = await sql`
     description = EXCLUDED.description,
     vendor_apps_open = true,
     booth_fee_cents = 4500,
+    payment_url = EXCLUDED.payment_url,
     updated_at = now()
   RETURNING id, slug
 `;

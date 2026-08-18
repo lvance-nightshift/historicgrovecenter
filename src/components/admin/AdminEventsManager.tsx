@@ -27,6 +27,7 @@ type Form = {
   vendorRegistration: boolean;
   foodRegistration: boolean;
   boothFee: string; // dollars per space; blank = free
+  paymentUrl: string; // hosted checkout link; blank = none
 };
 
 const blank: Form = {
@@ -42,6 +43,7 @@ const blank: Form = {
   vendorRegistration: false,
   foodRegistration: false,
   boothFee: "",
+  paymentUrl: "",
 };
 
 function formatWhen(iso: string | null): string {
@@ -93,6 +95,7 @@ export default function AdminEventsManager({
       vendorRegistration: e.vendorAppsOpen,
       foodRegistration: e.foodAppsOpen,
       boothFee: e.boothFeeCents != null ? String(e.boothFeeCents / 100) : "",
+      paymentUrl: e.paymentUrl ?? "",
     });
     setEditing(e.id);
     setError(null);
@@ -112,6 +115,7 @@ export default function AdminEventsManager({
     vendorRegistration: form.vendorRegistration,
     foodRegistration: form.foodRegistration,
     boothFee: form.boothFee,
+    paymentUrl: form.paymentUrl,
   });
 
   const feeToCents = (v: string): number | null => {
@@ -138,6 +142,7 @@ export default function AdminEventsManager({
       vendorAppsOpen: form.vendorRegistration,
       foodAppsOpen: form.foodRegistration,
       boothFeeCents: feeToCents(form.boothFee),
+      paymentUrl: form.paymentUrl.trim() || null,
     };
   }
 
@@ -307,6 +312,23 @@ export default function AdminEventsManager({
                 />
                 <span className="text-sm text-muted">per vendor space</span>
               </div>
+            </label>
+          )}
+          {(form.vendorRegistration || form.foodRegistration) && (
+            <label className="block text-sm">
+              <span className="font-medium text-foreground">
+                Payment link <span className="text-muted">(Square, etc. — optional)</span>
+              </span>
+              <input
+                value={form.paymentUrl}
+                onChange={(e) => setForm({ ...form, paymentUrl: e.target.value })}
+                placeholder="https://checkout.square.site/..."
+                className={input}
+              />
+              <span className="mt-1 block text-xs text-muted">
+                Shown as a &ldquo;Pay booth fee&rdquo; button after a vendor registers and in their
+                confirmation email.
+              </span>
             </label>
           )}
           <label className="flex items-center gap-2 text-sm">

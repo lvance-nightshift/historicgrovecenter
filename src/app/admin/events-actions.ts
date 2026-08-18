@@ -28,6 +28,7 @@ export type AdminEventInput = {
   vendorRegistration?: boolean;
   foodRegistration?: boolean;
   boothFee?: string; // dollars, e.g. "45" or "45.00"; blank = no fee
+  paymentUrl?: string; // hosted checkout link (Square, etc.); blank = none
 };
 
 function clean(v?: string): string | null {
@@ -83,6 +84,7 @@ export async function adminCreateEvent(input: AdminEventInput): Promise<number> 
       vendorAppsOpen: input.vendorRegistration ?? false,
       foodAppsOpen: input.foodRegistration ?? false,
       boothFeeCents: feeCents(input.boothFee),
+      paymentUrl: url(input.paymentUrl),
     })
     .returning({ id: events.id });
   revalidate();
@@ -108,6 +110,7 @@ export async function adminUpdateEvent(id: number, input: AdminEventInput): Prom
       vendorAppsOpen: input.vendorRegistration ?? false,
       foodAppsOpen: input.foodRegistration ?? false,
       boothFeeCents: feeCents(input.boothFee),
+      paymentUrl: url(input.paymentUrl),
       updatedAt: new Date(),
     })
     .where(eq(events.id, id));

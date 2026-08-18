@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitEventRegistration } from "@/app/actions/event-registration";
 import { initialVendorState } from "@/app/actions/vendor-state";
+import PayButton from "@/components/PayButton";
 import DocUpload from "@/components/DocUpload";
 
 const inputClass =
@@ -60,6 +61,7 @@ export default function EventRegistrationForm({
           You&apos;re on the list! 🎉
         </p>
         <p className="mt-2 text-sm text-foreground/80">{state.message}</p>
+        {state.payment && <PayButton payment={state.payment} />}
       </div>
     );
   }

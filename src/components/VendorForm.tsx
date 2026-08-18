@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { submitVendorRegistration } from "@/app/actions/vendor-registration";
 import { initialVendorState } from "@/app/actions/vendor-state";
 import DocUpload from "@/components/DocUpload";
+import PayButton from "@/components/PayButton";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -41,6 +42,7 @@ export default function VendorForm({ variant }: { variant: "craft" | "food" }) {
           You&apos;re on the list! 🎃
         </p>
         <p className="mt-2 text-sm text-foreground/80">{state.message}</p>
+        {state.payment && <PayButton payment={state.payment} />}
       </div>
     );
   }

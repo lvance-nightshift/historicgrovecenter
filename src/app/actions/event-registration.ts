@@ -124,6 +124,7 @@ export async function submitEventRegistration(
     startAt: Date | null;
     location: string | null;
     boothFeeCents: number | null;
+    paymentUrl: string | null;
   } | null = null;
   if (isDbConfigured()) {
     try {
@@ -137,6 +138,7 @@ export async function submitEventRegistration(
           vendorAppsOpen: events.vendorAppsOpen,
           foodAppsOpen: events.foodAppsOpen,
           boothFeeCents: events.boothFeeCents,
+          paymentUrl: events.paymentUrl,
         })
         .from(events)
         .where(eq(events.slug, slug))
@@ -156,6 +158,7 @@ export async function submitEventRegistration(
         startAt: ev.startAt,
         location: ev.location,
         boothFeeCents: ev.boothFeeCents,
+        paymentUrl: ev.paymentUrl,
       };
     } catch (err) {
       console.error("event-registration: event lookup failed", err);
@@ -175,6 +178,18 @@ export async function submitEventRegistration(
       ? spaces === 1
         ? dollars(perSpaceCents!)
         : `${dollars(feeCents)} (${spaces} × ${dollars(perSpaceCents!)})`
+      : undefined;
+
+  // Pay button — only when the event has both a fee and a hosted checkout link.
+  const payUrl = eventRow?.paymentUrl ?? null;
+  const payment =
+    payUrl && perSpaceCents
+      ? {
+          url: payUrl,
+          amountLabel: feeLabel!,
+          spaces,
+          perSpaceLabel: dollars(perSpaceCents),
+        }
       : undefined;
 
   // 1) Persist the registration (best-effort).
@@ -250,6 +265,7 @@ export async function submitEventRegistration(
           isFood,
           permitUrl: isFood ? await docUrl(permitDocKey) : undefined,
           insuranceUrl: isFood ? await docUrl(insuranceDocKey) : undefined,
+          paymentUrl: payUrl ?? undefined,
         },
         {
           name: eventRow.title,
@@ -274,5 +290,6 @@ export async function submitEventRegistration(
     message: isFood
       ? "Thanks! Your food-vendor registration and documents have been received. Someone from the Grove Center will follow up to confirm your space. Check your email for a confirmation."
       : "Thanks! Your vendor registration has been received. Someone from the Grove Center will follow up to confirm your space. Check your email for a confirmation.",
+    ...(payment ? { payment } : {}),
   };
 }

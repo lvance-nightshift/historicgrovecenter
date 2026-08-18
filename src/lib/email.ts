@@ -107,6 +107,7 @@ export type VendorRegistration = {
   isFood?: boolean;
   permitUrl?: string;
   insuranceUrl?: string;
+  paymentUrl?: string;
 };
 
 /**
@@ -167,6 +168,16 @@ export async function sendVendorRegistrationEmails(
       `Booth fee:        ${reg.feeLabel}`,
       "",
       "This is a request to reserve a space — it isn't confirmed yet. Spaces are limited and assigned first come, first served. Someone from the Grove Center will be in touch to confirm your space and arrange the booth fee.",
+      ...(reg.paymentUrl
+        ? [
+            "",
+            `Pay your booth fee${reg.feeLabel ? ` (${reg.feeLabel})` : ""} here:`,
+            reg.paymentUrl,
+            ...(reg.spaces && reg.spaces > 1
+              ? ["(The payment page charges per space — please complete it once for each space you reserved.)"]
+              : []),
+          ]
+        : []),
       ...(reg.isFood
         ? [
             "",
@@ -207,6 +218,7 @@ export type EventSignup = {
   isFood?: boolean;
   permitUrl?: string;
   insuranceUrl?: string;
+  paymentUrl?: string;
 };
 
 export async function sendEventRegistrationEmails(
@@ -268,6 +280,16 @@ export async function sendEventRegistrationEmails(
         : []),
       "",
       "This is a request to reserve a space — it isn't confirmed yet. Someone from the Grove Center will be in touch to confirm the details.",
+      ...(reg.paymentUrl
+        ? [
+            "",
+            `Pay your booth fee${reg.feeLabel ? ` (${reg.feeLabel})` : ""} here:`,
+            reg.paymentUrl,
+            ...(reg.spaces && reg.spaces > 1
+              ? ["(The payment page charges per space — please complete it once for each space you reserved.)"]
+              : []),
+          ]
+        : []),
       ...(reg.isFood
         ? [
             "",
