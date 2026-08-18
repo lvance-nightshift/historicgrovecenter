@@ -48,19 +48,19 @@ export default async function Home() {
             aria-hidden
           />
         )}
-        <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
           <p className="font-medium uppercase tracking-[0.25em] text-brass-light">
             {site.city} · Est. 1949
           </p>
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
+          <h1 className="mt-3 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             The heart of Oak Ridge&apos;s original neighborhood.
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-background/85">
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-background/85">
             Built for the workers of the Manhattan Project&apos;s Secret City,
             Grove Center has gathered neighbors for good food, good shops, and
             good company for more than seventy years — and still does.
           </p>
-          <div className="mt-9 flex flex-wrap gap-4">
+          <div className="mt-7 flex flex-wrap gap-4">
             <Link
               href="/events"
               className="rounded-full bg-brass px-6 py-3 font-semibold text-grove-dark shadow-sm transition-colors hover:bg-brass-light"
