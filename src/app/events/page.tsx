@@ -18,7 +18,7 @@ export default async function EventsPage() {
     <>
       <PageHero
         eyebrow="Calendar"
-        title="Events at the Center"
+        title="Events at the Grove Center"
         subtitle="There's almost always something happening in the courtyard. Here's what's on."
       />
 

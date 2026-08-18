@@ -6,6 +6,7 @@ import { getPublicEvents } from "@/lib/events-db";
 import { getMerchants } from "@/lib/merchants-db";
 import { site } from "@/lib/site";
 import { getSiteMedia } from "@/lib/media";
+import { PUMPKIN_FEST as PF } from "@/lib/pumpkin-fest";
 
 // Reads the current hero from the DB each request so admin changes show
 // immediately (the admin action also revalidates this path).
@@ -15,6 +16,9 @@ export default async function Home() {
   const featuredEvents = (await getPublicEvents()).upcoming.slice(0, 3);
   const featuredMerchants = (await getMerchants()).slice(0, 3);
   const hero = await getSiteMedia("home_hero");
+  // Feature the Pumpkin Fest vendor call while the fest is still upcoming;
+  // afterward the homepage falls back to the three "pillars" blurb.
+  const pumpkinUpcoming = Date.now() < new Date(PF.endAtISO).getTime();
 
   return (
     <>
@@ -78,33 +82,61 @@ export default async function Home() {
         )}
       </section>
 
-      {/* Intro / three pillars */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="grid gap-8 md:grid-cols-3">
-          {[
-            {
-              title: "A living landmark",
-              body: "One of Oak Ridge's four original shopping centers, Grove Center still centers daily life on the city's east side.",
-            },
-            {
-              title: "Independent merchants",
-              body: "Locally owned shops, makers, and eateries — many here for generations — anchor the Merchants Association.",
-            },
-            {
-              title: "Gatherings all year",
-              body: "Night markets, film nights at the Grove Theater, seasonal festivals, and history walks bring the courtyard alive.",
-            },
-          ].map((pillar) => (
-            <div key={pillar.title}>
-              <div className="rule-brass" />
-              <h2 className="mt-4 font-serif text-xl font-semibold text-grove">
-                {pillar.title}
-              </h2>
-              <p className="mt-2 leading-relaxed text-muted">{pillar.body}</p>
+      {/* Pumpkin Fest vendor call (while upcoming) — otherwise the three pillars */}
+      {pumpkinUpcoming ? (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <div className="overflow-hidden rounded-2xl border border-brass/40 bg-gradient-to-br from-brass/15 via-surface to-brick/10 p-8 shadow-sm sm:p-12">
+            <div className="flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brick">
+                  🎃 {PF.dateLabel} · Vendor sign-ups open
+                </p>
+                <h2 className="mt-3 font-serif text-3xl font-semibold text-grove sm:text-4xl">
+                  Be a vendor at the Fall Pumpkin Fest
+                </h2>
+                <p className="mt-3 leading-relaxed text-muted">
+                  Artisan, craft &amp; food vendors welcome — {PF.boothFeeLabel}.{" "}
+                  {PF.spotsLabel} A high-traffic community day benefiting SARG, the
+                  Historic Grove Theater &amp; local arts.
+                </p>
+              </div>
+              <Link
+                href="/pumpkin-fest"
+                className="shrink-0 rounded-full bg-grove px-7 py-3.5 font-semibold text-background shadow-sm transition-colors hover:bg-grove-dark"
+              >
+                Reserve your space →
+              </Link>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      ) : (
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                title: "A living landmark",
+                body: "One of Oak Ridge's four original shopping centers, the Grove Center still centers daily life on the city's east side.",
+              },
+              {
+                title: "Independent merchants",
+                body: "Locally owned shops, makers, and eateries — many here for generations — anchor the Merchants Association.",
+              },
+              {
+                title: "Gatherings all year",
+                body: "Night markets, film nights at the Grove Theater, seasonal festivals, and history walks bring the courtyard alive.",
+              },
+            ].map((pillar) => (
+              <div key={pillar.title}>
+                <div className="rule-brass" />
+                <h2 className="mt-4 font-serif text-xl font-semibold text-grove">
+                  {pillar.title}
+                </h2>
+                <p className="mt-2 leading-relaxed text-muted">{pillar.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Featured events */}
       <section className="bg-surface/60">
@@ -115,7 +147,7 @@ export default async function Home() {
                 Mark your calendar
               </p>
               <h2 className="mt-2 font-serif text-3xl font-semibold text-grove">
-                Upcoming at the Center
+                Upcoming at the Grove Center
               </h2>
             </div>
             <Link

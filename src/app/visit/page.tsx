@@ -33,7 +33,7 @@ export default function VisitPage() {
               </address>
               <p className="mt-3 text-muted">
                 Grove Center sits on Oak Ridge&apos;s east side, with free
-                surface parking throughout the center.
+                surface parking on-site.
               </p>
             </div>
 
