@@ -56,8 +56,8 @@ export const PUMPKIN_FEST = {
     "High foot-traffic community event in the heart of the Grove Center",
   ],
   // Oak Ridge Floral's hands-on Succulent Pumpkin workshop, held during the
-  // fest. Registration runs through Eventbrite — set `registerUrl` when the
-  // link is live; until then the site shows a "registration opening soon" note.
+  // fest. Registration/payment is a per-session Square link (Friends of the
+  // Grove account). A session with an empty `registerUrl` shows "coming soon".
   workshop: {
     title: "Succulent Pumpkin Design Workshop",
     presenter: "Brandon Salamacha — Oak Ridge Floral",
@@ -65,8 +65,16 @@ export const PUMPKIN_FEST = {
       "A hands-on seasonal design workshop: build your own fall centerpiece from heirloom pumpkins and live succulents — a long-lasting arrangement you'll enjoy through Thanksgiving.",
     priceLabel: "$50 per person",
     slotsLabel: "15 spots per session",
-    sessions: ["Session 1 · 11:00 a.m. – 12:15 p.m.", "Session 2 · 1:00 p.m. – 2:15 p.m."],
-    registerUrl: "", // Eventbrite link — coming soon
+    sessions: [
+      {
+        label: "Session 1 · 11:00 a.m. – 12:15 p.m.",
+        registerUrl: "https://square.link/u/6YLm2Zu4",
+      },
+      {
+        label: "Session 2 · 1:00 p.m. – 2:15 p.m.",
+        registerUrl: "https://square.link/u/VRJjkYY2",
+      },
+    ],
   },
 } as const;
 
