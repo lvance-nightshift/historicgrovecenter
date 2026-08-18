@@ -52,7 +52,7 @@ export default async function Home() {
             aria-hidden
           />
         )}
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
           <p className="font-medium uppercase tracking-[0.25em] text-brass-light">
             {site.city} · Est. 1949
           </p>
@@ -88,7 +88,7 @@ export default async function Home() {
 
       {/* Featured October events (while upcoming) — otherwise the three pillars */}
       {harvestUpcoming || pumpkinUpcoming ? (
-        <section className="mx-auto max-w-6xl space-y-4 px-4 py-10 sm:px-6">
+        <section className="mx-auto max-w-6xl space-y-4 px-4 py-8 sm:px-6">
           {harvestUpcoming && (
             <FeaturedBanner
               eyebrow="🍂 Friday, October 16 · 5 PM"
@@ -110,7 +110,7 @@ export default async function Home() {
           )}
         </section>
       ) : (
-        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <div className="grid gap-8 md:grid-cols-3">
             {[
               {
@@ -140,7 +140,7 @@ export default async function Home() {
 
       {/* Featured events */}
       <section className="bg-surface/60">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brick">
@@ -158,7 +158,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {featuredEvents.length > 0 ? (
               featuredEvents.map((event) => (
                 <EventCard key={event.slug} event={event} />
@@ -174,7 +174,7 @@ export default async function Home() {
 
       {/* Featured merchants */}
       <section className="bg-grove-dark text-background">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brass-light">
@@ -191,7 +191,7 @@ export default async function Home() {
               See the full directory →
             </Link>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
             {featuredMerchants.map((merchant) => (
               <MerchantCard key={merchant.slug} merchant={merchant} />
             ))}
