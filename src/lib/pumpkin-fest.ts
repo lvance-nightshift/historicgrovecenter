@@ -55,6 +55,19 @@ export const PUMPKIN_FEST = {
     "Live music, pumpkins, petting zoo & pet costume contest",
     "High foot-traffic community event in the heart of the Grove Center",
   ],
+  // Oak Ridge Floral's hands-on Succulent Pumpkin workshop, held during the
+  // fest. Registration runs through Eventbrite — set `registerUrl` when the
+  // link is live; until then the site shows a "registration opening soon" note.
+  workshop: {
+    title: "Succulent Pumpkin Design Workshop",
+    presenter: "Brandon Salamacha — Oak Ridge Floral",
+    blurb:
+      "A hands-on seasonal design workshop: build your own fall centerpiece from heirloom pumpkins and live succulents — a long-lasting arrangement you'll enjoy through Thanksgiving.",
+    priceLabel: "$50 per person",
+    slotsLabel: "15 spots per session",
+    sessions: ["Session 1 · 11:00 a.m. – 12:15 p.m.", "Session 2 · 1:00 p.m. – 2:15 p.m."],
+    registerUrl: "", // Eventbrite link — coming soon
+  },
 } as const;
 
 export type PumpkinFest = typeof PUMPKIN_FEST;
