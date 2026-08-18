@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { formatEventDate, type PublicEvent } from "@/lib/events";
 
 export default function EventCard({ event }: { event: PublicEvent }) {
   const d = formatEventDate(event.date);
 
   return (
-    <article className="flex gap-5 rounded-xl border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md">
+    <article className="relative flex gap-5 rounded-xl border border-border bg-surface p-5 shadow-sm transition-all hover:border-grove/40 hover:shadow-md">
       {/* Date block */}
       <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg bg-grove text-background">
         <span className="text-xs font-semibold uppercase tracking-wider text-brass-light">
@@ -30,8 +31,15 @@ export default function EventCard({ event }: { event: PublicEvent }) {
             </span>
           )}
         </div>
+        {/* Title link stretches over the whole card (via ::after) so the card is
+            clickable; the action buttons below sit above it with z-10. */}
         <h3 className="mt-2 font-serif text-lg font-semibold text-grove">
-          {event.title}
+          <Link
+            href={`/events/${event.slug}`}
+            className="transition-colors after:absolute after:inset-0 hover:text-grove-dark"
+          >
+            {event.title}
+          </Link>
         </h3>
         {event.summary && (
           <p className="mt-1 text-sm text-muted">{event.summary}</p>
@@ -39,26 +47,28 @@ export default function EventCard({ event }: { event: PublicEvent }) {
         <p className="mt-2 text-xs font-medium text-foreground/70">
           📍 {event.location}
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {event.ticketUrl && (
-            <a
-              href={event.ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block rounded-full bg-grove px-4 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-grove-dark"
-            >
-              Get tickets ↗
-            </a>
-          )}
-          {event.registerUrl && (
-            <a
-              href={event.registerUrl}
-              className="inline-block rounded-full border border-grove/50 px-4 py-1.5 text-xs font-semibold text-grove transition-colors hover:bg-grove/10"
-            >
-              Become a vendor →
-            </a>
-          )}
-        </div>
+        {(event.ticketUrl || event.registerUrl) && (
+          <div className="relative z-10 mt-3 flex flex-wrap gap-2">
+            {event.ticketUrl && (
+              <a
+                href={event.ticketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-full bg-grove px-4 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-grove-dark"
+              >
+                Get tickets ↗
+              </a>
+            )}
+            {event.registerUrl && (
+              <Link
+                href={event.registerUrl}
+                className="inline-block rounded-full border border-grove/50 px-4 py-1.5 text-xs font-semibold text-grove transition-colors hover:bg-grove/10"
+              >
+                Become a vendor →
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </article>
   );

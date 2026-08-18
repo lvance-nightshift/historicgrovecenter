@@ -11,6 +11,15 @@ import { and, asc, desc, eq, gte, isNotNull, isNull, or, sql } from "drizzle-orm
 import { getDb } from "@/db";
 import { companies, events, eventParticipations } from "@/db/schema";
 import type { PublicEvent } from "@/lib/events";
+import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
+
+/** Where a "Become a vendor" link points for an event with sign-ups open. */
+function registerUrlFor(slug: string, hasApps: boolean): string | undefined {
+  if (!hasApps) return undefined;
+  // Pumpkin Fest has its own bespoke registration page (1–2 space Square links);
+  // everything else uses the generic per-event register form.
+  return slug === PUMPKIN_FEST.slug ? "/pumpkin-fest" : `/events/${slug}/register`;
+}
 
 export type EventRegistration = {
   id: number;
@@ -137,8 +146,7 @@ export async function getPublicEvents(): Promise<{
         badge: r.type === "business" ? r.ownerName ?? "Merchant event" : "Grove Center",
         summary: desc ? (desc.length > 140 ? `${desc.slice(0, 137)}…` : desc) : "",
         ticketUrl: r.ticketUrl ?? undefined,
-        registerUrl:
-          r.vendorAppsOpen || r.foodAppsOpen ? `/events/${r.slug}/register` : undefined,
+        registerUrl: registerUrlFor(r.slug, r.vendorAppsOpen || r.foodAppsOpen),
       };
       if (date >= today) upcoming.push(ev);
       else past.push(ev);
@@ -148,6 +156,66 @@ export async function getPublicEvents(): Promise<{
   } catch (err) {
     console.error("getPublicEvents failed", err);
     return { upcoming: [], past: [] };
+  }
+}
+
+export type PublicEventDetail = {
+  slug: string;
+  title: string;
+  date: string; // YYYY-MM-DD (Eastern)
+  startTime: string;
+  endTime?: string;
+  location: string;
+  badge: string;
+  description: string; // full, untruncated
+  ticketUrl?: string;
+  registerUrl?: string;
+  ownerName?: string;
+  ownerSlug?: string;
+};
+
+/** A single published, dated event by slug — full detail for /events/[slug]. */
+export async function getPublicEventBySlug(
+  slug: string,
+): Promise<PublicEventDetail | null> {
+  try {
+    const [r] = await getDb()
+      .select({
+        slug: events.slug,
+        title: events.title,
+        type: events.type,
+        startAt: events.startAt,
+        endAt: events.endAt,
+        location: events.location,
+        description: events.description,
+        ticketUrl: events.ticketUrl,
+        vendorAppsOpen: events.vendorAppsOpen,
+        foodAppsOpen: events.foodAppsOpen,
+        ownerName: companies.name,
+        ownerSlug: companies.slug,
+      })
+      .from(events)
+      .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
+      .where(and(eq(events.slug, slug), eq(events.published, true), isNotNull(events.startAt)))
+      .limit(1);
+    if (!r || !r.startAt) return null;
+    return {
+      slug: r.slug,
+      title: r.title,
+      date: etDate.format(r.startAt),
+      startTime: etTime.format(r.startAt),
+      endTime: r.endAt ? etTime.format(r.endAt) : undefined,
+      location: r.location ?? "Historic Grove Center",
+      badge: r.type === "business" ? r.ownerName ?? "Merchant event" : "Grove Center",
+      description: (r.description ?? "").trim(),
+      ticketUrl: r.ticketUrl ?? undefined,
+      registerUrl: registerUrlFor(r.slug, r.vendorAppsOpen || r.foodAppsOpen),
+      ownerName: r.type === "business" ? r.ownerName ?? undefined : undefined,
+      ownerSlug: r.type === "business" ? r.ownerSlug ?? undefined : undefined,
+    };
+  } catch (err) {
+    console.error("getPublicEventBySlug failed", err);
+    return null;
   }
 }
 
