@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { getSiteMedia } from "@/lib/media";
+import { getSiteContact } from "@/lib/site-settings";
 import HeroManager from "@/components/admin/HeroManager";
+import SiteContactEditor from "@/components/admin/SiteContactEditor";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSitePage() {
   const hero = await getSiteMedia("home_hero");
+  const contact = await getSiteContact();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -13,6 +16,17 @@ export default async function AdminSitePage() {
       <p className="mt-1 text-sm text-muted">
         Appearance and imagery for the public site.
       </p>
+
+      <section className="mt-8">
+        <h2 className="font-serif text-xl font-semibold text-grove">
+          Grove Center contact info
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Shown in the footer and on the Visit page. Leave a social link blank to
+          hide it.
+        </p>
+        <SiteContactEditor initial={contact} />
+      </section>
 
       <section className="mt-8">
         <Link

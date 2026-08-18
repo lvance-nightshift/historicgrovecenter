@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { nav, site } from "@/lib/site";
+import type { SiteContact } from "@/lib/site-settings";
 import FooterSignIn from "@/components/FooterSignIn";
 
-export default function Footer() {
+export default function Footer({ contact }: { contact: SiteContact }) {
   const year = 2026; // Static build; bump as needed or wire to a build-time value.
 
   return (
@@ -43,16 +44,16 @@ export default function Footer() {
             Visit &amp; Contact
           </h3>
           <address className="mt-4 space-y-2 text-sm not-italic text-background/80">
-            <p>{site.address.line1}</p>
-            <p>{site.address.line2}</p>
+            <p>{contact.addressLine1}</p>
+            <p>{contact.addressLine2}</p>
             <p>
-              <a href={`tel:${site.phone.replace(/[^0-9]/g, "")}`} className="hover:text-background">
-                {site.phone}
+              <a href={`tel:${contact.phone.replace(/[^0-9]/g, "")}`} className="hover:text-background">
+                {contact.phone}
               </a>
             </p>
             <p>
-              <a href={`mailto:${site.email}`} className="hover:text-background">
-                {site.email}
+              <a href={`mailto:${contact.email}`} className="break-all hover:text-background">
+                {contact.email}
               </a>
             </p>
           </address>

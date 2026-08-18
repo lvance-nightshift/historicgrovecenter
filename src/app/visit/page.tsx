@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import ContactForm from "@/components/ContactForm";
-import { site } from "@/lib/site";
+import { getSiteContact } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "Visit & Contact",
@@ -9,7 +9,10 @@ export const metadata: Metadata = {
     "Directions, parking, hours, and how to reach the Grove Center Merchants Association in Oak Ridge, Tennessee.",
 };
 
-export default function VisitPage() {
+export const dynamic = "force-dynamic";
+
+export default async function VisitPage() {
+  const contact = await getSiteContact();
   return (
     <>
       <PageHero
@@ -28,8 +31,8 @@ export default function VisitPage() {
                 Getting here
               </h2>
               <address className="mt-3 space-y-1 text-lg not-italic text-foreground/90">
-                <p>{site.address.line1}</p>
-                <p>{site.address.line2}</p>
+                <p>{contact.addressLine1}</p>
+                <p>{contact.addressLine2}</p>
               </address>
               <p className="mt-3 text-muted">
                 Grove Center sits on Oak Ridge&apos;s east side, with free
@@ -64,10 +67,10 @@ export default function VisitPage() {
                   <dt className="w-16 text-muted">Phone</dt>
                   <dd>
                     <a
-                      href={`tel:${site.phone.replace(/[^0-9]/g, "")}`}
+                      href={`tel:${contact.phone.replace(/[^0-9]/g, "")}`}
                       className="font-medium text-grove hover:underline"
                     >
-                      {site.phone}
+                      {contact.phone}
                     </a>
                   </dd>
                 </div>
@@ -75,34 +78,40 @@ export default function VisitPage() {
                   <dt className="w-16 text-muted">Email</dt>
                   <dd>
                     <a
-                      href={`mailto:${site.email}`}
+                      href={`mailto:${contact.email}`}
                       className="font-medium text-grove hover:underline"
                     >
-                      {site.email}
+                      {contact.email}
                     </a>
                   </dd>
                 </div>
-                <div className="flex gap-3">
-                  <dt className="w-16 text-muted">Social</dt>
-                  <dd className="flex gap-4">
-                    <a
-                      href={site.social.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-grove hover:underline"
-                    >
-                      Facebook
-                    </a>
-                    <a
-                      href={site.social.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-grove hover:underline"
-                    >
-                      Instagram
-                    </a>
-                  </dd>
-                </div>
+                {(contact.facebook || contact.instagram) && (
+                  <div className="flex gap-3">
+                    <dt className="w-16 text-muted">Social</dt>
+                    <dd className="flex gap-4">
+                      {contact.facebook && (
+                        <a
+                          href={contact.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-grove hover:underline"
+                        >
+                          Facebook
+                        </a>
+                      )}
+                      {contact.instagram && (
+                        <a
+                          href={contact.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-grove hover:underline"
+                        >
+                          Instagram
+                        </a>
+                      )}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
           </div>

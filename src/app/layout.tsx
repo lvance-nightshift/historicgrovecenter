@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { site } from "@/lib/site";
 import { getActiveTheme, activeThemeCss } from "@/lib/theme";
+import { getSiteContact } from "@/lib/site-settings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,6 +68,7 @@ export default async function RootLayout({
 
   // Active theme → CSS-variable override injected below (overrides globals.css).
   const theme = await getActiveTheme();
+  const contact = comingSoon ? null : await getSiteContact();
 
   return (
     <html
@@ -81,7 +83,7 @@ export default async function RootLayout({
           <>
             <Header />
             <main className="flex-1">{children}</main>
-            <Footer />
+            <Footer contact={contact!} />
           </>
         )}
         {/* Vercel Web Analytics — tracks all pages, incl. the coming-soon page */}

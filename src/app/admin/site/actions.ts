@@ -12,6 +12,7 @@ import { themes, themeSchedules, siteSettings } from "@/db/schema";
 import { getActor, isAdmin } from "@/lib/auth/authorize";
 import { DEFAULT_PALETTE, type Palette } from "@/lib/theme-shared";
 import { THEME_OVERRIDE_KEY } from "@/lib/theme";
+import { CONTACT_KEYS, type SiteContact } from "@/lib/site-settings";
 
 async function assertAdmin() {
   const actor = await getActor();
@@ -32,6 +33,35 @@ function slug(name: string): string {
 function revalidateSite() {
   revalidatePath("/", "layout");
   revalidatePath("/admin/site/appearance");
+}
+
+/* ---------------- Contact info ---------------- */
+
+export async function updateSiteContact(input: SiteContact): Promise<void> {
+  await assertAdmin();
+  const db = getDb();
+  const now = new Date();
+  const entries: [keyof SiteContact, string][] = [
+    ["email", input.email],
+    ["phone", input.phone],
+    ["addressLine1", input.addressLine1],
+    ["addressLine2", input.addressLine2],
+    ["facebook", input.facebook],
+    ["instagram", input.instagram],
+  ];
+  for (const [field, raw] of entries) {
+    const value = (raw ?? "").trim();
+    await db
+      .insert(siteSettings)
+      .values({ key: CONTACT_KEYS[field], value, updatedAt: now })
+      .onConflictDoUpdate({
+        target: siteSettings.key,
+        set: { value, updatedAt: now },
+      });
+  }
+  revalidateSite(); // "/" layout covers footer, plus the contact pages
+  revalidatePath("/visit");
+  revalidatePath("/coming-soon");
 }
 
 /* ---------------- Themes ---------------- */

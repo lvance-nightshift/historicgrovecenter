@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { site } from "@/lib/site";
+import { getSiteContact } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "Coming Soon",
@@ -8,10 +9,12 @@ export const metadata: Metadata = {
     "Historic Grove Center — Oak Ridge's original neighborhood shopping center. Our new site is on the way.",
 };
 
-export default function ComingSoonPage() {
+export default async function ComingSoonPage() {
   // Optional hero image (env-configured so this works even before the DB is
   // migrated to production). Falls back to the sunburst motif when unset.
   const heroUrl = process.env.COMING_SOON_HERO_URL;
+  // Resilient: falls back to the static default email if the DB is unavailable.
+  const { email } = await getSiteContact();
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-grove px-6 text-center text-background">
@@ -74,10 +77,10 @@ export default function ComingSoonPage() {
         <p className="mt-8 text-sm text-background/70">
           Questions?{" "}
           <a
-            href={`mailto:${site.email}`}
+            href={`mailto:${email}`}
             className="font-medium text-background underline decoration-brass-light/60 underline-offset-4 hover:decoration-background"
           >
-            {site.email}
+            {email}
           </a>
         </p>
       </div>
