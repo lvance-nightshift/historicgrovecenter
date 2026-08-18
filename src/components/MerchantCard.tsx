@@ -1,5 +1,19 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Merchant } from "@/lib/merchants";
+
+/** Initials for the logo fallback — up to two, skipping small joining words. */
+function initials(name: string): string {
+  const skip = new Set(["the", "a", "an", "of", "and", "&"]);
+  const words = name
+    .split(/\s+/)
+    .filter((w) => w && !skip.has(w.toLowerCase().replace(/[^a-z&]/gi, "")));
+  const letters = (words.length ? words : name.split(/\s+/))
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+  return (letters || name[0] || "?").toUpperCase();
+}
 
 export default function MerchantCard({ merchant }: { merchant: Merchant }) {
   // Description may be rich-text HTML — strip to a plain-text teaser.
@@ -23,11 +37,30 @@ export default function MerchantCard({ merchant }: { merchant: Merchant }) {
           ))}
         </div>
       )}
-      <h3 className="mt-3 font-serif text-xl font-semibold text-foreground group-hover:text-grove">
-        {merchant.name}
-      </h3>
+
+      <div className="mt-3 flex items-center gap-3">
+        {merchant.logoUrl ? (
+          <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-black/5">
+            <Image
+              src={merchant.logoUrl}
+              alt=""
+              fill
+              sizes="48px"
+              className="object-contain p-1"
+            />
+          </span>
+        ) : (
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-grove/10 font-serif text-lg font-semibold text-grove">
+            {initials(merchant.name)}
+          </span>
+        )}
+        <h3 className="min-w-0 font-serif text-xl font-semibold text-foreground group-hover:text-grove">
+          {merchant.name}
+        </h3>
+      </div>
+
       {merchant.tagline && (
-        <p className="mt-1 text-sm font-medium text-brick-dark">
+        <p className="mt-2 text-sm font-medium text-brick-dark">
           {merchant.tagline}
         </p>
       )}
