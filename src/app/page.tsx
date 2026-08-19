@@ -91,14 +91,16 @@ export default async function Home() {
         <section className="mx-auto max-w-6xl space-y-4 px-4 py-8 sm:px-6">
           {harvestUpcoming && (
             <FeaturedBanner
-              eyebrow="🍂 Friday, October 16 · 5 PM"
+              href="/events/oak-ridge-harvest-table-2026"
+              eyebrow="🍂 Friday, October 16 · 6 PM"
               title="Oak Ridge Harvest Table"
-              blurb="A black-tie dinner & mural ribbon-cutting celebrating the arts — benefiting the local arts community."
+              blurb="An elegant black-tie dinner unveiling the Historic Grove Theater's brand-new mural — with a ribbon-cutting, live music & a gourmet seated dinner benefiting the local arts. 1940s/50s attire encouraged."
               actions={[{ href: HARVEST_TICKETS, label: "Get tickets ↗", external: true, primary: true }]}
             />
           )}
           {pumpkinUpcoming && (
             <FeaturedBanner
+              href="/events/fall-pumpkin-fest-2026"
               eyebrow={`🎃 ${PF.dateLabel} · ${PF.hoursLabel}`}
               title="Fall Pumpkin Fest"
               blurb="A free community day — music, pumpkins, a petting zoo & pet costume contest. Vendors welcome, too."
@@ -204,13 +206,15 @@ export default async function Home() {
 
 type BannerAction = { href: string; label: string; external?: boolean; primary?: boolean };
 
-/** Compact promo banner for a featured event. */
+/** Compact promo banner for a featured event; the whole banner links to `href`. */
 function FeaturedBanner({
+  href,
   eyebrow,
   title,
   blurb,
   actions,
 }: {
+  href: string;
   eyebrow: string;
   title: string;
   blurb: string;
@@ -221,16 +225,21 @@ function FeaturedBanner({
       ? "rounded-full bg-grove px-5 py-2.5 text-center text-sm font-semibold text-background shadow-sm transition-colors hover:bg-grove-dark"
       : "rounded-full border border-grove/40 px-5 py-2.5 text-center text-sm font-semibold text-grove transition-colors hover:bg-grove/10";
   return (
-    <div className="overflow-hidden rounded-xl border border-brass/40 bg-gradient-to-br from-brass/12 via-surface to-brick/10 p-5 shadow-sm sm:p-6">
+    <div className="relative overflow-hidden rounded-xl border border-brass/40 bg-gradient-to-br from-brass/12 via-surface to-brick/10 p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brick">
             {eyebrow}
           </p>
-          <h3 className="mt-1 font-serif text-2xl font-semibold text-grove">{title}</h3>
+          {/* Title link stretches over the whole banner (::after); buttons sit above it. */}
+          <h3 className="mt-1 font-serif text-2xl font-semibold text-grove">
+            <Link href={href} className="transition-colors after:absolute after:inset-0 hover:text-grove-dark">
+              {title}
+            </Link>
+          </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">{blurb}</p>
         </div>
-        <div className="flex shrink-0 flex-wrap gap-3">
+        <div className="relative z-10 flex shrink-0 flex-wrap gap-3">
           {actions.map((a) =>
             a.external ? (
               <a
