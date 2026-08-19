@@ -27,7 +27,7 @@ const description =
   "Reserve your spot at the Oak Ridge Historic Grove Center Fall Pumpkin Fest! " +
   "This beloved community event brings together music, pumpkins, local vendors, " +
   "a petting zoo, and a pet costume contest for a day of fun for the whole family. " +
-  "Benefits SARG Inc. (Shelter Animals Rescue Group), Local Arts, and the Historic Grove Theater.";
+  "Benefits SARG, Inc. (Shelter Animals Rescue Group) & the Historic Grove Theater.";
 
 const [row] = await sql`
   INSERT INTO events

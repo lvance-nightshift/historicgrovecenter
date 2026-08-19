@@ -35,7 +35,7 @@ export const PUMPKIN_FEST = {
     2: "https://square.link/u/Gixs7pG9",
   } as Record<number, string>,
   benefiting:
-    "SARG Inc. (Shelter Animals Rescue Group), Local Arts, and the Historic Grove Theater",
+    "SARG, Inc. (Shelter Animals Rescue Group) & the Historic Grove Theater",
   contact: {
     name: "Shad — Oak Ridge Florist",
     email: "HistoricGroveCenter@gmail.com",
@@ -47,12 +47,13 @@ export const PUMPKIN_FEST = {
   intro:
     "Reserve your spot at the Oak Ridge Historic Grove Center Fall Pumpkin Fest! This beloved community event brings together music, pumpkins, local vendors, a petting zoo, and a pet costume contest for a day of fun for the whole family.",
   benefitBlurb:
-    "This year's Pumpkin Fest benefits SARG Inc. (Shelter Animals Rescue Group), Local Arts and the Historic Grove Theater. Join us in making it the best one yet!",
+    "This year's Pumpkin Fest benefits SARG, Inc. (Shelter Animals Rescue Group) & the Historic Grove Theater. Join us in making it the best one yet!",
   highlights: [
     "30 artisan craft vendor spaces available — first come, first served",
     "$45 per vendor space",
     "Food vendors welcome (Oak Ridge permit + insurance required)",
-    "Live music, pumpkins, petting zoo & pet costume contest",
+    "Live music, free pumpkins, petting zoo & pet costume contest",
+    "Reserve your free pumpkin while supplies last",
     "High foot-traffic community event in the heart of the Grove Center",
   ],
   // Oak Ridge Floral's hands-on Succulent Pumpkin workshop, held during the

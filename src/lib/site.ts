@@ -11,7 +11,7 @@ export const site = {
   city: "Oak Ridge, Tennessee",
   // PLACEHOLDER — replace with the real address, email, and phone.
   address: {
-    line1: "Grove Center",
+    line1: "123 Randolph Road",
     line2: "Oak Ridge, TN 37830",
   },
   email: "info@historicgrovecenter.com",

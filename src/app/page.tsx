@@ -94,7 +94,7 @@ export default async function Home() {
               href="/events/oak-ridge-harvest-table-2026"
               eyebrow="🍂 Friday, October 16 · 6 PM"
               title="Oak Ridge Harvest Table"
-              blurb="An elegant black-tie dinner unveiling the Historic Grove Theater's brand-new mural — with a ribbon-cutting, live music & a gourmet seated dinner benefiting the local arts. 1940s/50s attire encouraged."
+              blurb="An elegant black-tie dinner ($100/person) unveiling the Historic Grove Theater's brand-new mural — ribbon-cutting, live music & a gourmet dinner by Fire & Salt, benefiting the Grove Theater & local arts. 1940s/50s attire encouraged."
               actions={[{ href: HARVEST_TICKETS, label: "Get tickets ↗", external: true, primary: true }]}
             />
           )}
