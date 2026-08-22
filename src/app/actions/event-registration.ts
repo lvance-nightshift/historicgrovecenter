@@ -125,6 +125,7 @@ export async function submitEventRegistration(
     location: string | null;
     boothFeeCents: number | null;
     paymentUrl: string | null;
+    notifyEmails: string | null;
   } | null = null;
   if (isDbConfigured()) {
     try {
@@ -139,6 +140,7 @@ export async function submitEventRegistration(
           foodAppsOpen: events.foodAppsOpen,
           boothFeeCents: events.boothFeeCents,
           paymentUrl: events.paymentUrl,
+          notifyEmails: events.notifyEmails,
         })
         .from(events)
         .where(eq(events.slug, slug))
@@ -159,6 +161,7 @@ export async function submitEventRegistration(
         location: ev.location,
         boothFeeCents: ev.boothFeeCents,
         paymentUrl: ev.paymentUrl,
+        notifyEmails: ev.notifyEmails,
       };
     } catch (err) {
       console.error("event-registration: event lookup failed", err);
@@ -272,6 +275,7 @@ export async function submitEventRegistration(
           dateLabel: eventRow.startAt ? etDateLabel.format(eventRow.startAt) : undefined,
           location: eventRow.location ?? undefined,
         },
+        eventRow.notifyEmails,
       );
     } catch (err) {
       console.error("event-registration: failed to send email", err);

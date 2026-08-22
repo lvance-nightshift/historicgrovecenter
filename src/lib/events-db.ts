@@ -292,6 +292,7 @@ export type AdminEvent = {
   foodAppsOpen: boolean;
   boothFeeCents: number | null;
   paymentUrl: string | null;
+  notifyEmails: string | null;
   registrationCount: number;
 };
 
@@ -315,6 +316,7 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         foodAppsOpen: events.foodAppsOpen,
         boothFeeCents: events.boothFeeCents,
         paymentUrl: events.paymentUrl,
+        notifyEmails: events.notifyEmails,
         registrationCount: sql<number>`(SELECT count(*)::int FROM ${eventParticipations} ep WHERE ep.event_id = ${events.id})`,
       })
       .from(events)

@@ -28,6 +28,7 @@ type Form = {
   foodRegistration: boolean;
   boothFee: string; // dollars per space; blank = free
   paymentUrl: string; // hosted checkout link; blank = none
+  notifyEmails: string; // comma-separated; blank = default site email
 };
 
 const blank: Form = {
@@ -44,6 +45,7 @@ const blank: Form = {
   foodRegistration: false,
   boothFee: "",
   paymentUrl: "",
+  notifyEmails: "",
 };
 
 function formatWhen(iso: string | null): string {
@@ -96,6 +98,7 @@ export default function AdminEventsManager({
       foodRegistration: e.foodAppsOpen,
       boothFee: e.boothFeeCents != null ? String(e.boothFeeCents / 100) : "",
       paymentUrl: e.paymentUrl ?? "",
+      notifyEmails: e.notifyEmails ?? "",
     });
     setEditing(e.id);
     setError(null);
@@ -116,6 +119,7 @@ export default function AdminEventsManager({
     foodRegistration: form.foodRegistration,
     boothFee: form.boothFee,
     paymentUrl: form.paymentUrl,
+    notifyEmails: form.notifyEmails,
   });
 
   const feeToCents = (v: string): number | null => {
@@ -143,6 +147,7 @@ export default function AdminEventsManager({
       foodAppsOpen: form.foodRegistration,
       boothFeeCents: feeToCents(form.boothFee),
       paymentUrl: form.paymentUrl.trim() || null,
+      notifyEmails: form.notifyEmails.trim() || null,
       registrationCount: 0,
     };
   }
@@ -341,6 +346,23 @@ export default function AdminEventsManager({
               <span className="mt-1 block text-xs text-muted">
                 Shown as a &ldquo;Pay booth fee&rdquo; button after a vendor registers and in their
                 confirmation email.
+              </span>
+            </label>
+          )}
+          {(form.vendorRegistration || form.foodRegistration) && (
+            <label className="block text-sm">
+              <span className="font-medium text-foreground">
+                Send registrations to{" "}
+                <span className="text-muted">(email — separate multiple with commas)</span>
+              </span>
+              <input
+                value={form.notifyEmails}
+                onChange={(e) => setForm({ ...form, notifyEmails: e.target.value })}
+                placeholder="coordinator@example.com, second@example.com"
+                className={input}
+              />
+              <span className="mt-1 block text-xs text-muted">
+                Who gets an email for each registration. Blank uses the default site contact address.
               </span>
             </label>
           )}

@@ -112,16 +112,30 @@ export type VendorRegistration = {
   paymentExact?: boolean;
 };
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Parse a comma/semicolon/space-separated list into a clean "a@x, b@y" string, or null. */
+function recipientList(raw?: string | null): string | null {
+  if (!raw) return null;
+  const emails = [
+    ...new Set(raw.split(/[,;\s]+/).map((s) => s.trim()).filter((s) => EMAIL_RE.test(s))),
+  ];
+  return emails.length ? emails.join(", ") : null;
+}
+
 /**
  * Notifies the organizer of a new vendor registration and sends the vendor a
  * confirmation. Best-effort: throws if the transport can't be built, so the
  * caller can record the email status. `eventName` is the human event title.
+ * `notifyTo` overrides the recipient(s) of the organizer email (falls back to
+ * CONTACT_TO_EMAIL when blank).
  */
 export async function sendVendorRegistrationEmails(
   reg: VendorRegistration,
   eventName: string,
+  notifyTo?: string | null,
 ) {
-  const to = process.env.CONTACT_TO_EMAIL;
+  const to = recipientList(notifyTo) ?? process.env.CONTACT_TO_EMAIL;
   const from = process.env.CONTACT_FROM_EMAIL;
   if (!to || !from) {
     throw new Error("CONTACT_TO_EMAIL / CONTACT_FROM_EMAIL are not set.");
@@ -226,8 +240,9 @@ export type EventSignup = {
 export async function sendEventRegistrationEmails(
   reg: EventSignup,
   event: { name: string; dateLabel?: string; location?: string },
+  notifyTo?: string | null,
 ) {
-  const to = process.env.CONTACT_TO_EMAIL;
+  const to = recipientList(notifyTo) ?? process.env.CONTACT_TO_EMAIL;
   const from = process.env.CONTACT_FROM_EMAIL;
   if (!to || !from) {
     throw new Error("CONTACT_TO_EMAIL / CONTACT_FROM_EMAIL are not set.");

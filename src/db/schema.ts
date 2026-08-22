@@ -225,6 +225,9 @@ export const events = pgTable("events", {
   // Hosted checkout link (Square, etc.) where vendors pay the booth fee. When
   // set, the registration confirmation + email show a "Pay booth fee" button.
   paymentUrl: text("payment_url"),
+  // Who receives registration-notification emails for this event — one or more
+  // addresses, comma-separated. Blank = fall back to CONTACT_TO_EMAIL.
+  notifyEmails: text("notify_emails"),
   // External tickets/RSVP link (e.g. Eventbrite). When set, the public
   // calendar shows a "Get tickets" button.
   ticketUrl: text("ticket_url"),

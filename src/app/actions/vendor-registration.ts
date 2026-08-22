@@ -118,15 +118,17 @@ export async function submitVendorRegistration(
   // 1) Persist the registration (best-effort).
   let participationId: number | null = null;
   let paymentUrl: string | null = null;
+  let notifyTo: string | null = null;
   if (isDbConfigured()) {
     try {
       const db = getDb();
       const [ev] = await db
-        .select({ id: events.id, paymentUrl: events.paymentUrl })
+        .select({ id: events.id, paymentUrl: events.paymentUrl, notifyEmails: events.notifyEmails })
         .from(events)
         .where(eq(events.slug, PUMPKIN_FEST.slug));
       if (ev) {
         paymentUrl = ev.paymentUrl ?? null;
+        notifyTo = ev.notifyEmails ?? null;
         const personId = await upsertPerson(contactName, email, phone);
         const [dupe] = personId
           ? await db
@@ -218,6 +220,7 @@ export async function submitVendorRegistration(
           paymentExact: true,
         },
         PUMPKIN_FEST.title,
+        notifyTo,
       );
     } catch (err) {
       console.error("vendor-registration: failed to send email", err);

@@ -78,6 +78,13 @@
       "when": 1787057083200,
       "tag": "0010_small_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1787394703590,
+      "tag": "0011_acoustic_master_chief",
+      "breakpoints": true
     }
   ]
 }
