@@ -125,3 +125,13 @@ export async function adminDeleteEvent(id: number): Promise<void> {
   await getDb().delete(events).where(eq(events.id, id));
   revalidate();
 }
+
+/** Set (or clear) an event's graphic/hero image. */
+export async function setEventHero(id: number, mediaId: number | null): Promise<void> {
+  await assertAdmin();
+  await getDb()
+    .update(events)
+    .set({ heroMediaId: mediaId, updatedAt: new Date() })
+    .where(eq(events.id, id));
+  revalidate();
+}

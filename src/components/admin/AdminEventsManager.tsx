@@ -9,6 +9,7 @@ import {
 } from "@/app/admin/events-actions";
 import type { AdminEvent } from "@/lib/events-db";
 import { isoToEtLocalInput, etLocalInputToIso } from "@/lib/datetime";
+import EventImageManager from "@/components/admin/EventImageManager";
 
 const input =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -148,6 +149,7 @@ export default function AdminEventsManager({
       boothFeeCents: feeToCents(form.boothFee),
       paymentUrl: form.paymentUrl.trim() || null,
       notifyEmails: form.notifyEmails.trim() || null,
+      heroUrl: null,
       registrationCount: 0,
     };
   }
@@ -166,7 +168,7 @@ export default function AdminEventsManager({
           setItems((prev) => [...prev, rowFrom(id)].sort(sortByStart));
         } else if (typeof editing === "number") {
           await adminUpdateEvent(editing, payload());
-          setItems((prev) => prev.map((it) => (it.id === editing ? { ...rowFrom(editing), registrationCount: it.registrationCount } : it)).sort(sortByStart));
+          setItems((prev) => prev.map((it) => (it.id === editing ? { ...rowFrom(editing), registrationCount: it.registrationCount, heroUrl: it.heroUrl } : it)).sort(sortByStart));
         }
         setEditing(null);
       } catch {
@@ -365,6 +367,16 @@ export default function AdminEventsManager({
                 Who gets an email for each registration. Blank uses the default site contact address.
               </span>
             </label>
+          )}
+          {typeof editing === "number" ? (
+            <EventImageManager
+              eventId={editing}
+              currentUrl={items.find((it) => it.id === editing)?.heroUrl ?? null}
+            />
+          ) : (
+            <p className="rounded-lg border border-dashed border-border p-3 text-xs text-muted">
+              Save the event first, then reopen it to add a graphic.
+            </p>
           )}
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} />

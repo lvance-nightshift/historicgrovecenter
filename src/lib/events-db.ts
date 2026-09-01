@@ -9,8 +9,9 @@
 import "server-only";
 import { and, asc, desc, eq, gte, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { companies, events, eventParticipations } from "@/db/schema";
+import { companies, events, eventParticipations, media } from "@/db/schema";
 import type { PublicEvent } from "@/lib/events";
+import { mediaUrl } from "@/lib/media";
 import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
 
 /** Where a "Become a vendor" link points for an event with sign-ups open. */
@@ -172,6 +173,7 @@ export type PublicEventDetail = {
   registerUrl?: string;
   ownerName?: string;
   ownerSlug?: string;
+  heroUrl?: string;
 };
 
 /** A single published, dated event by slug — full detail for /events/[slug]. */
@@ -193,9 +195,11 @@ export async function getPublicEventBySlug(
         foodAppsOpen: events.foodAppsOpen,
         ownerName: companies.name,
         ownerSlug: companies.slug,
+        heroKey: media.r2Key,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
+      .leftJoin(media, eq(media.id, events.heroMediaId))
       .where(and(eq(events.slug, slug), eq(events.published, true), isNotNull(events.startAt)))
       .limit(1);
     if (!r || !r.startAt) return null;
@@ -212,6 +216,7 @@ export async function getPublicEventBySlug(
       registerUrl: registerUrlFor(r.slug, r.vendorAppsOpen || r.foodAppsOpen),
       ownerName: r.type === "business" ? r.ownerName ?? undefined : undefined,
       ownerSlug: r.type === "business" ? r.ownerSlug ?? undefined : undefined,
+      heroUrl: r.heroKey ? mediaUrl({ r2Key: r.heroKey }) : undefined,
     };
   } catch (err) {
     console.error("getPublicEventBySlug failed", err);
@@ -293,6 +298,7 @@ export type AdminEvent = {
   boothFeeCents: number | null;
   paymentUrl: string | null;
   notifyEmails: string | null;
+  heroUrl: string | null;
   registrationCount: number;
 };
 
@@ -317,13 +323,16 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         boothFeeCents: events.boothFeeCents,
         paymentUrl: events.paymentUrl,
         notifyEmails: events.notifyEmails,
+        heroKey: media.r2Key,
         registrationCount: sql<number>`(SELECT count(*)::int FROM ${eventParticipations} ep WHERE ep.event_id = ${events.id})`,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
+      .leftJoin(media, eq(media.id, events.heroMediaId))
       .orderBy(asc(events.startAt));
-    return rows.map((r) => ({
+    return rows.map(({ heroKey, ...r }) => ({
       ...r,
+      heroUrl: heroKey ? mediaUrl({ r2Key: heroKey }) : null,
       startAt: r.startAt ? r.startAt.toISOString() : null,
       endAt: r.endAt ? r.endAt.toISOString() : null,
     }));

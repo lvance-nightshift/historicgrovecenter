@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
 import { getPublicEventBySlug } from "@/lib/events-db";
@@ -38,7 +39,20 @@ export default async function EventDetailPage({ params }: Params) {
           ← All events
         </Link>
 
-        <p className="mt-4 text-sm font-medium text-foreground/70">📍 {ev.location}</p>
+        {ev.heroUrl && (
+          <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-2xl border border-border shadow-sm">
+            <Image
+              src={ev.heroUrl}
+              alt={ev.title}
+              fill
+              sizes="(min-width: 768px) 768px, 100vw"
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
+
+        <p className="mt-5 text-sm font-medium text-foreground/70">📍 {ev.location}</p>
 
         {ev.description && (
           <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-foreground/85">
