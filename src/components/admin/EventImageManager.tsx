@@ -17,17 +17,25 @@ export default function EventImageManager({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [picked, setPicked] = useState<UploadedMedia | null>(null);
   const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
 
   function save(mediaId: number | null) {
+    setMsg(null);
     startTransition(async () => {
-      await setEventHero(eventId, mediaId);
-      setPicked(null);
-      setOpen(false);
-      router.refresh();
+      try {
+        await setEventHero(eventId, mediaId);
+        setMsg(mediaId ? "Image set ✓" : "Image removed");
+        setOpen(false);
+        router.refresh();
+      } catch {
+        setMsg("Could not save the image. Please try again.");
+      }
     });
   }
+
+  // Selecting (or uploading + clicking) an image applies it immediately.
+  const onSelect = (m: UploadedMedia) => save(m.id);
 
   return (
     <div className="rounded-lg border border-border bg-background/40 p-3">
@@ -63,21 +71,17 @@ export default function EventImageManager({
       {open && (
         <div className="mt-3">
           <p className="text-xs text-muted">
-            Upload a graphic or pick one from the library. Landscape images look best on the event page.
+            Upload a graphic (or pick one from the library) — <strong>click it and it's applied
+            right away</strong>. Landscape images look best on the event page.
           </p>
           <div className="mt-2">
-            <MediaPicker collection="events" onSelect={setPicked} selectedId={picked?.id ?? null} />
+            <MediaPicker collection="events" onSelect={onSelect} />
           </div>
-          <button
-            type="button"
-            onClick={() => picked && save(picked.id)}
-            disabled={!picked || pending}
-            className="mt-3 rounded-full bg-grove px-5 py-2 text-sm font-semibold text-background hover:bg-grove-dark disabled:opacity-50"
-          >
-            {pending ? "Saving…" : "Use this image"}
-          </button>
         </div>
       )}
+
+      {msg && <p className="mt-2 text-xs font-medium text-grove">{msg}</p>}
+      {pending && <p className="mt-2 text-xs text-muted">Saving…</p>}
     </div>
   );
 }

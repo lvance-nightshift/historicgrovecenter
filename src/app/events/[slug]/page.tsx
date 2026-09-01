@@ -40,16 +40,15 @@ export default async function EventDetailPage({ params }: Params) {
         </Link>
 
         {ev.heroUrl && (
-          <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-2xl border border-border shadow-sm">
-            <Image
-              src={ev.heroUrl}
-              alt={ev.title}
-              fill
-              sizes="(min-width: 768px) 768px, 100vw"
-              className="object-cover"
-              priority
-            />
-          </div>
+          <Image
+            src={ev.heroUrl}
+            alt={ev.title}
+            width={ev.heroWidth ?? 1200}
+            height={ev.heroHeight ?? 675}
+            sizes="(min-width: 768px) 768px, 100vw"
+            className="mt-5 h-auto w-full rounded-2xl border border-border shadow-sm"
+            priority
+          />
         )}
 
         <p className="mt-5 text-sm font-medium text-foreground/70">📍 {ev.location}</p>

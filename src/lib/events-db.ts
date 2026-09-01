@@ -174,6 +174,8 @@ export type PublicEventDetail = {
   ownerName?: string;
   ownerSlug?: string;
   heroUrl?: string;
+  heroWidth?: number;
+  heroHeight?: number;
 };
 
 /** A single published, dated event by slug — full detail for /events/[slug]. */
@@ -196,6 +198,8 @@ export async function getPublicEventBySlug(
         ownerName: companies.name,
         ownerSlug: companies.slug,
         heroKey: media.r2Key,
+        heroWidth: media.width,
+        heroHeight: media.height,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
@@ -217,6 +221,8 @@ export async function getPublicEventBySlug(
       ownerName: r.type === "business" ? r.ownerName ?? undefined : undefined,
       ownerSlug: r.type === "business" ? r.ownerSlug ?? undefined : undefined,
       heroUrl: r.heroKey ? mediaUrl({ r2Key: r.heroKey }) : undefined,
+      heroWidth: r.heroWidth ?? undefined,
+      heroHeight: r.heroHeight ?? undefined,
     };
   } catch (err) {
     console.error("getPublicEventBySlug failed", err);
