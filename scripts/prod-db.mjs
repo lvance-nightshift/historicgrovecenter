@@ -1,8 +1,9 @@
 /*
  * Production DB maintenance helper.
  *
- *   node scripts/prod-db.mjs "<SQL>"    run one SQL statement, print rows
- *   node scripts/prod-db.mjs --migrate  apply pending Drizzle migrations
+ *   node scripts/prod-db.mjs "<SQL>"        run one SQL statement, print rows
+ *   node scripts/prod-db.mjs --migrate      apply pending Drizzle migrations
+ *   node scripts/prod-db.mjs --run <file>   run a seed module's default(sql) export
  *
  * Pulls the production env from Vercel (read-only), connects to the prod Neon
  * branch via DATABASE_URL_UNPOOLED. Used for one-off go-live / content-promotion
@@ -40,6 +41,11 @@ try {
     await migrate(drizzle(neon(url)), { migrationsFolder: "./src/db/migrations" });
     const [{ c }] = await neon(url)`SELECT count(*)::int c FROM drizzle.__drizzle_migrations`;
     console.log("✓ migrations applied. total:", c);
+  } else if (arg === "--run") {
+    const modPath = process.argv[3];
+    if (!modPath) throw new Error("Usage: node scripts/prod-db.mjs --run <module.mjs>");
+    const mod = await import(path.resolve(modPath));
+    await mod.default(neon(url));
   } else {
     console.log("SQL :", arg.trim());
     const rows = await neon(url).query(arg);
