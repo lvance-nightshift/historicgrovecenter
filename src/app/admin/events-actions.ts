@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
 import { getActor, isAdmin } from "@/lib/auth/authorize";
+import { normalizeSponsors, type Sponsor } from "@/lib/sponsors";
 
 async function assertAdmin() {
   const actor = await getActor();
@@ -132,6 +133,20 @@ export async function setEventHero(id: number, mediaId: number | null): Promise<
   await getDb()
     .update(events)
     .set({ heroMediaId: mediaId, updatedAt: new Date() })
+    .where(eq(events.id, id));
+  revalidate();
+}
+
+/** Replace an event's "Our Sponsors" list (full list each call). */
+export async function setEventSponsors(
+  id: number,
+  sponsors: Sponsor[],
+): Promise<void> {
+  await assertAdmin();
+  const clean = normalizeSponsors(sponsors);
+  await getDb()
+    .update(events)
+    .set({ sponsors: clean, updatedAt: new Date() })
     .where(eq(events.id, id));
   revalidate();
 }

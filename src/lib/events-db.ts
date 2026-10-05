@@ -13,6 +13,7 @@ import { companies, events, eventParticipations, media } from "@/db/schema";
 import type { PublicEvent } from "@/lib/events";
 import { mediaUrl } from "@/lib/media";
 import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
+import { normalizeSponsors, type Sponsor } from "@/lib/sponsors";
 
 /** Where a "Become a vendor" link points for an event with sign-ups open. */
 function registerUrlFor(slug: string, hasApps: boolean): string | undefined {
@@ -176,6 +177,7 @@ export type PublicEventDetail = {
   heroUrl?: string;
   heroWidth?: number;
   heroHeight?: number;
+  sponsors: Sponsor[];
 };
 
 /** A single published, dated event by slug — full detail for /events/[slug]. */
@@ -200,6 +202,7 @@ export async function getPublicEventBySlug(
         heroKey: media.r2Key,
         heroWidth: media.width,
         heroHeight: media.height,
+        sponsors: events.sponsors,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
@@ -223,6 +226,7 @@ export async function getPublicEventBySlug(
       heroUrl: r.heroKey ? mediaUrl({ r2Key: r.heroKey }) : undefined,
       heroWidth: r.heroWidth ?? undefined,
       heroHeight: r.heroHeight ?? undefined,
+      sponsors: normalizeSponsors(r.sponsors),
     };
   } catch (err) {
     console.error("getPublicEventBySlug failed", err);
@@ -305,6 +309,7 @@ export type AdminEvent = {
   paymentUrl: string | null;
   notifyEmails: string | null;
   heroUrl: string | null;
+  sponsors: Sponsor[];
   registrationCount: number;
 };
 
@@ -330,15 +335,17 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
         paymentUrl: events.paymentUrl,
         notifyEmails: events.notifyEmails,
         heroKey: media.r2Key,
+        sponsors: events.sponsors,
         registrationCount: sql<number>`(SELECT count(*)::int FROM ${eventParticipations} ep WHERE ep.event_id = ${events.id})`,
       })
       .from(events)
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
       .leftJoin(media, eq(media.id, events.heroMediaId))
       .orderBy(asc(events.startAt));
-    return rows.map(({ heroKey, ...r }) => ({
+    return rows.map(({ heroKey, sponsors, ...r }) => ({
       ...r,
       heroUrl: heroKey ? mediaUrl({ r2Key: heroKey }) : null,
+      sponsors: normalizeSponsors(sponsors),
       startAt: r.startAt ? r.startAt.toISOString() : null,
       endAt: r.endAt ? r.endAt.toISOString() : null,
     }));

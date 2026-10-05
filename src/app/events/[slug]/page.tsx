@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import PageHero from "@/components/PageHero";
+import SponsorsWall from "@/components/SponsorsWall";
 import { getPublicEventBySlug } from "@/lib/events-db";
 import { formatEventDate } from "@/lib/events";
 import { PUMPKIN_FEST as PF } from "@/lib/pumpkin-fest";
@@ -128,6 +129,8 @@ export default async function EventDetailPage({ params }: Params) {
             </div>
           </div>
         )}
+
+        <SponsorsWall sponsors={ev.sponsors} />
       </section>
     </>
   );

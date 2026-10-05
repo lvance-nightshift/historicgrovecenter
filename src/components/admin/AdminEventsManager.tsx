@@ -10,6 +10,7 @@ import {
 import type { AdminEvent } from "@/lib/events-db";
 import { isoToEtLocalInput, etLocalInputToIso } from "@/lib/datetime";
 import EventImageManager from "@/components/admin/EventImageManager";
+import EventSponsorsManager from "@/components/admin/EventSponsorsManager";
 
 const input =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-grove focus:ring-2 focus:ring-grove/20";
@@ -150,6 +151,7 @@ export default function AdminEventsManager({
       paymentUrl: form.paymentUrl.trim() || null,
       notifyEmails: form.notifyEmails.trim() || null,
       heroUrl: null,
+      sponsors: [],
       registrationCount: 0,
     };
   }
@@ -168,7 +170,7 @@ export default function AdminEventsManager({
           setItems((prev) => [...prev, rowFrom(id)].sort(sortByStart));
         } else if (typeof editing === "number") {
           await adminUpdateEvent(editing, payload());
-          setItems((prev) => prev.map((it) => (it.id === editing ? { ...rowFrom(editing), registrationCount: it.registrationCount, heroUrl: it.heroUrl } : it)).sort(sortByStart));
+          setItems((prev) => prev.map((it) => (it.id === editing ? { ...rowFrom(editing), registrationCount: it.registrationCount, heroUrl: it.heroUrl, sponsors: it.sponsors } : it)).sort(sortByStart));
         }
         setEditing(null);
       } catch {
@@ -369,13 +371,19 @@ export default function AdminEventsManager({
             </label>
           )}
           {typeof editing === "number" ? (
-            <EventImageManager
-              eventId={editing}
-              currentUrl={items.find((it) => it.id === editing)?.heroUrl ?? null}
-            />
+            <>
+              <EventImageManager
+                eventId={editing}
+                currentUrl={items.find((it) => it.id === editing)?.heroUrl ?? null}
+              />
+              <EventSponsorsManager
+                eventId={editing}
+                initial={items.find((it) => it.id === editing)?.sponsors ?? []}
+              />
+            </>
           ) : (
             <p className="rounded-lg border border-dashed border-border p-3 text-xs text-muted">
-              Save the event first, then reopen it to add a graphic.
+              Save the event first, then reopen it to add a graphic or sponsors.
             </p>
           )}
           <label className="flex items-center gap-2 text-sm">

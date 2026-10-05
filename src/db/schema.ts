@@ -228,6 +228,9 @@ export const events = pgTable("events", {
   // Who receives registration-notification emails for this event — one or more
   // addresses, comma-separated. Blank = fall back to CONTACT_TO_EMAIL.
   notifyEmails: text("notify_emails"),
+  // "Our Sponsors" wall for the event page. jsonb array of
+  // { name, logoUrl, website?, presenting? }. See src/lib/sponsors.ts.
+  sponsors: jsonb("sponsors"),
   // External tickets/RSVP link (e.g. Eventbrite). When set, the public
   // calendar shows a "Get tickets" button.
   ticketUrl: text("ticket_url"),
