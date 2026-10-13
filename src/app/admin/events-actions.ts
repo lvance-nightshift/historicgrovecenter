@@ -5,11 +5,12 @@
  */
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { events } from "@/db/schema";
+import { events, mediaAttachments } from "@/db/schema";
 import { getActor, isAdmin } from "@/lib/auth/authorize";
 import { normalizeSponsors, type Sponsor } from "@/lib/sponsors";
+import { getEventGallery, type EventGalleryImage } from "@/lib/events-db";
 
 async function assertAdmin() {
   const actor = await getActor();
@@ -135,6 +136,47 @@ export async function setEventHero(id: number, mediaId: number | null): Promise<
     .set({ heroMediaId: mediaId, updatedAt: new Date() })
     .where(eq(events.id, id));
   revalidate();
+}
+
+/** Add an image to an event's gallery (extra images shown on the event page). */
+export async function addEventGalleryImage(
+  eventId: number,
+  mediaId: number,
+): Promise<EventGalleryImage[]> {
+  await assertAdmin();
+  // Append after any existing gallery images.
+  const [{ next }] = await getDb()
+    .select({
+      next: sql<number>`coalesce(max(${mediaAttachments.sortOrder}), -1) + 1`,
+    })
+    .from(mediaAttachments)
+    .where(
+      and(
+        eq(mediaAttachments.targetType, "event"),
+        eq(mediaAttachments.targetId, eventId),
+        eq(mediaAttachments.purpose, "gallery"),
+      ),
+    );
+  await getDb().insert(mediaAttachments).values({
+    mediaId,
+    targetType: "event",
+    targetId: eventId,
+    purpose: "gallery",
+    sortOrder: next ?? 0,
+  });
+  revalidate();
+  return getEventGallery(eventId);
+}
+
+/** Remove one gallery image (by its attachment row id). */
+export async function removeEventGalleryImage(
+  eventId: number,
+  attachmentId: number,
+): Promise<EventGalleryImage[]> {
+  await assertAdmin();
+  await getDb().delete(mediaAttachments).where(eq(mediaAttachments.id, attachmentId));
+  revalidate();
+  return getEventGallery(eventId);
 }
 
 /** Replace an event's "Our Sponsors" list (full list each call). */

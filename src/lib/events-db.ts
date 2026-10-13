@@ -7,9 +7,9 @@
  */
 
 import "server-only";
-import { and, asc, desc, eq, gte, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { companies, events, eventParticipations, media } from "@/db/schema";
+import { companies, events, eventParticipations, media, mediaAttachments } from "@/db/schema";
 import type { PublicEvent } from "@/lib/events";
 import { mediaUrl } from "@/lib/media";
 import { PUMPKIN_FEST } from "@/lib/pumpkin-fest";
@@ -161,6 +161,67 @@ export async function getPublicEvents(): Promise<{
   }
 }
 
+export type EventGalleryImage = {
+  attachmentId: number;
+  mediaId: number;
+  url: string;
+  width?: number;
+  height?: number;
+  alt?: string;
+};
+
+/** Extra images attached to events (purpose='gallery'), grouped by event id. */
+async function galleriesFor(
+  eventIds: number[],
+): Promise<Map<number, EventGalleryImage[]>> {
+  const map = new Map<number, EventGalleryImage[]>();
+  if (eventIds.length === 0) return map;
+  const rows = await getDb()
+    .select({
+      targetId: mediaAttachments.targetId,
+      attachmentId: mediaAttachments.id,
+      mediaId: media.id,
+      r2Key: media.r2Key,
+      width: media.width,
+      height: media.height,
+      alt: media.altText,
+    })
+    .from(mediaAttachments)
+    .innerJoin(media, eq(media.id, mediaAttachments.mediaId))
+    .where(
+      and(
+        eq(mediaAttachments.targetType, "event"),
+        inArray(mediaAttachments.targetId, eventIds),
+        eq(mediaAttachments.purpose, "gallery"),
+      ),
+    )
+    .orderBy(asc(mediaAttachments.sortOrder), asc(mediaAttachments.id));
+  for (const r of rows) {
+    if (r.targetId == null) continue;
+    const list = map.get(r.targetId) ?? [];
+    list.push({
+      attachmentId: r.attachmentId,
+      mediaId: r.mediaId,
+      url: mediaUrl({ r2Key: r.r2Key }),
+      width: r.width ?? undefined,
+      height: r.height ?? undefined,
+      alt: r.alt ?? undefined,
+    });
+    map.set(r.targetId, list);
+  }
+  return map;
+}
+
+/** Gallery images for a single event. */
+export async function getEventGallery(eventId: number): Promise<EventGalleryImage[]> {
+  try {
+    return (await galleriesFor([eventId])).get(eventId) ?? [];
+  } catch (err) {
+    console.error("getEventGallery failed", err);
+    return [];
+  }
+}
+
 export type PublicEventDetail = {
   slug: string;
   title: string;
@@ -178,6 +239,7 @@ export type PublicEventDetail = {
   heroWidth?: number;
   heroHeight?: number;
   sponsors: Sponsor[];
+  gallery: EventGalleryImage[];
 };
 
 /** A single published, dated event by slug — full detail for /events/[slug]. */
@@ -187,6 +249,7 @@ export async function getPublicEventBySlug(
   try {
     const [r] = await getDb()
       .select({
+        id: events.id,
         slug: events.slug,
         title: events.title,
         type: events.type,
@@ -210,6 +273,7 @@ export async function getPublicEventBySlug(
       .where(and(eq(events.slug, slug), eq(events.published, true), isNotNull(events.startAt)))
       .limit(1);
     if (!r || !r.startAt) return null;
+    const gallery = (await galleriesFor([r.id])).get(r.id) ?? [];
     return {
       slug: r.slug,
       title: r.title,
@@ -227,6 +291,7 @@ export async function getPublicEventBySlug(
       heroWidth: r.heroWidth ?? undefined,
       heroHeight: r.heroHeight ?? undefined,
       sponsors: normalizeSponsors(r.sponsors),
+      gallery,
     };
   } catch (err) {
     console.error("getPublicEventBySlug failed", err);
@@ -310,6 +375,7 @@ export type AdminEvent = {
   notifyEmails: string | null;
   heroUrl: string | null;
   sponsors: Sponsor[];
+  gallery: EventGalleryImage[];
   registrationCount: number;
 };
 
@@ -342,10 +408,12 @@ export async function getAllEventsAdmin(): Promise<AdminEvent[]> {
       .leftJoin(companies, eq(companies.id, events.ownerCompanyId))
       .leftJoin(media, eq(media.id, events.heroMediaId))
       .orderBy(asc(events.startAt));
+    const galleries = await galleriesFor(rows.map((r) => r.id));
     return rows.map(({ heroKey, sponsors, ...r }) => ({
       ...r,
       heroUrl: heroKey ? mediaUrl({ r2Key: heroKey }) : null,
       sponsors: normalizeSponsors(sponsors),
+      gallery: galleries.get(r.id) ?? [],
       startAt: r.startAt ? r.startAt.toISOString() : null,
       endAt: r.endAt ? r.endAt.toISOString() : null,
     }));

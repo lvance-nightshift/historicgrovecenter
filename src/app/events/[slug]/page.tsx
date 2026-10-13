@@ -97,6 +97,22 @@ export default async function EventDetailPage({ params }: Params) {
           )}
         </div>
 
+        {ev.gallery.length > 0 && (
+          <div className="mt-8 space-y-6">
+            {ev.gallery.map((img) => (
+              <Image
+                key={img.attachmentId}
+                src={img.url}
+                alt={img.alt ?? ev.title}
+                width={img.width ?? 1200}
+                height={img.height ?? 675}
+                sizes="(min-width: 768px) 768px, 100vw"
+                className="h-auto w-full rounded-2xl border border-border shadow-sm"
+              />
+            ))}
+          </div>
+        )}
+
         {/* Succulent Pumpkin Workshop — per-session Square registration */}
         {ev.slug === PF.workshop.slug && (
           <div className="mt-8 max-w-lg">
